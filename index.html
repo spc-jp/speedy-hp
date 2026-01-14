@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>秒速ホームページ工房</title>
+<style>
+/* =========================================
+   Global Reset & Variables
+   ========================================= */
+:root {
+    /* Base Colors (SPC Base) */
+    --color-navy: #020562;
+    --color-cyan: #22AEC9;
+    --color-white: #FEFEFE;
+    --color-bg-light: #F4F6F9;
+    --color-bg-dark: #0f172a;
+    --color-text-dark: #333333;
+    --color-text-light: #F0F0F0;
+    --color-gray-100: #f3f4f6;
+    --color-gray-200: #e5e7eb;
+    --color-gray-400: #9ca3af;
+    --color-gray-600: #4b5563;
+    
+    /* Industry Accents */
+    --accent-primary: var(--color-navy);
+    --accent-secondary: var(--color-cyan);
+    
+    /* UI Theme */
+    --ui-bg: var(--color-white);
+    --ui-text: var(--color-text-dark);
+    --ui-border: var(--color-gray-200);
+    --ui-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    
+    /* Dimensions */
+    --header-height: 60px;
+    --footer-height: 60px; /* Mobile only usually */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+}
+
+[data-theme="dark"] {
+    --ui-bg: #1e293b;
+    --ui-text: var(--color-text-light);
+    --ui-border: #334155;
+    --glass-bg: rgba(30, 41, 59, 0.9);
+    --color-bg-light: #0f172a;
+    --color-gray-100: #1e293b;
+    --color-gray-200: #334155;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+    margin: 0; padding: 0;
+    font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+    background-color: var(--color-bg-light);
+    color: var(--ui-text);
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================================
+   App Structure
+   ========================================= */
+.app-header {
+    height: var(--header-height);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--ui-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+}
+.app-logo {
+    font-weight: 700;
+    font-size: 1.1rem;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.app-controls { display: flex; gap: 12px; }
+.icon-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--ui-text); opacity: 0.7; transition: opacity 0.2s;
+    padding: 8px; border-radius: 50%;
+}
+.icon-btn:hover { opacity: 1; background-color: var(--color-gray-100); }
+
+.app-main {
+    margin-top: var(--header-height);
+    /* Footer height is handled via media queries below */
+    height: calc(100vh - var(--header-height) - var(--footer-height));
+    display: grid;
+    grid-template-columns: 1fr;
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .app-main {
+        grid-template-columns: 380px 1fr;
+        /* height: calc(100vh - var(--header-height)); */ /* Removed to allow footer space */
+    }
+}
+
+/* =========================================
+   Editor Panel
+   ========================================= */
+.editor-panel {
+    overflow-y: auto;
+    padding: 0;
+    background-color: var(--ui-bg);
+    border-right: 1px solid var(--ui-border);
+    display: flex;
+    flex-direction: column;
+}
+
+.config-section {
+    padding: 16px;
+    background: var(--color-gray-100);
+    border-bottom: 1px solid var(--ui-border);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.action-banner-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 16px 16px 0 16px;
+}
+.action-banner {
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    text-align: center;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: transform 0.1s, opacity 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.action-banner:active { transform: scale(0.98); }
+.banner-easy { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; }
+.banner-image { background: linear-gradient(135deg, #14b8a6, #0ea5e9); color: white; }
+
+.form-container {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 80px; /* Extra space for scrolling */
+}
+
+.form-section {
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--ui-bg);
+}
+.form-header {
+    padding: 12px 16px;
+    background: var(--ui-bg);
+    border-bottom: 1px solid transparent;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.form-header:hover { background: var(--color-gray-100); }
+.form-header::after {
+    content: '▼'; font-size: 0.7rem; transition: transform 0.3s; opacity: 0.5;
+}
+.form-section.open .form-header {
+    border-bottom: 1px solid var(--ui-border);
+    background: var(--color-gray-100);
+}
+.form-section.open .form-header::after { transform: rotate(180deg); }
+.form-body {
+    padding: 16px;
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+}
+.form-section.open .form-body { display: flex; }
+
+.input-group { display: flex; flex-direction: column; gap: 6px; }
+.input-label { font-size: 0.8rem; color: var(--color-gray-600); font-weight: 500; }
+.input-field, .select-field, .textarea-field {
+    padding: 10px;
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-sm);
+    background: var(--ui-bg);
+    color: var(--ui-text);
+    font-size: 0.95rem;
+    width: 100%;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-field:focus, .select-field:focus, .textarea-field:focus { 
+    outline: none; 
+    border-color: var(--accent-secondary);
+    box-shadow: 0 0 0 3px rgba(34, 174, 201, 0.1);
+}
+.textarea-field { resize: vertical; min-height: 80px; font-family: inherit; }
+
+.toggle-switch { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.toggle-input { display: none; }
+.toggle-slider {
+    width: 40px; height: 20px; background: var(--color-gray-400);
+    border-radius: 20px; position: relative; transition: 0.3s;
+}
+.toggle-slider::before {
+    content: ''; position: absolute; width: 16px; height: 16px;
+    border-radius: 50%; background: #fff; top: 2px; left: 2px; transition: 0.3s;
+}
+.toggle-input:checked + .toggle-slider { background: var(--accent-secondary); }
+.toggle-input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+/* =========================================
+   Preview Panel
+   ========================================= */
+.preview-panel {
+    background-color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+.preview-frame-container {
+    width: 375px;
+    height: 100%;
+    max-height: 750px;
+    background: #fff;
+    border-radius: 24px;
+    border: 8px solid #111;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+.preview-iframe { width: 100%; height: 100%; border: none; background: #fff; }
+
+@media (max-width: 767px) {
+    .app-main { grid-template-rows: 1fr; grid-template-columns: 1fr; }
+    .preview-panel { display: none; padding: 10px; height: 100%; }
+    .preview-frame-container { width: 100%; height: 100%; max-width: 100%; border-width: 2px; border-radius: 8px; }
+    body.mode-preview .editor-panel { display: none; }
+    body.mode-preview .preview-panel { display: flex; }
+}
+
+/* =========================================
+   Footer Actions & Copyright
+   ========================================= */
+.app-footer {
+    height: var(--footer-height);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--ui-border);
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Changed from center to space-between */
+    padding: 0 16px;
+    z-index: 100;
+}
+
+/* @media (min-width: 768px) {
+    .app-footer { display: none; }
+} */ /* Removed to show footer on desktop */
+
+.mobile-toggle-group {
+    display: none;
+    background: var(--color-gray-100);
+    padding: 4px;
+    border-radius: 24px;
+}
+@media (max-width: 767px) { .mobile-toggle-group { display: flex; } }
+
+.toggle-btn-m {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--color-gray-600);
+    font-weight: 600;
+}
+.toggle-btn-m.active {
+    background: var(--ui-bg);
+    color: var(--accent-primary);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.app-copyright {
+    font-size: 0.75rem;
+    color: var(--color-gray-400);
+    margin-left: auto;
+}
+@media (max-width: 767px) {
+   .app-copyright {
+       font-size: 0.6rem;
+       max-width: 120px;
+       text-align: right;
+       line-height: 1.2;
+   }
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.1s;
+    display: flex; align-items: center; gap: 6px;
+    justify-content: center;
+}
+.btn:active { transform: scale(0.98); }
+.btn-ghost { background: transparent; color: var(--color-gray-600); }
+.btn-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.btn-primary { 
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: #fff;
+    box-shadow: 0 4px 6px rgba(34, 174, 201, 0.3);
+}
+
+.export-area {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--ui-border);
+}
+
+.btn-large {
+    width: 100%;
+    padding: 14px;
+    font-size: 1.1rem;
+    box-shadow: 0 8px 16px -4px rgba(34, 174, 201, 0.4);
+}
+
+/* =========================================
+   Modals & Image Manager
+   ========================================= */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+}
+.modal-overlay.active { display: flex; }
+.modal {
+    background: var(--ui-bg);
+    width: 90%; max-width: 500px;
+    max-height: 85vh;
+    overflow-y: auto;
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--ui-shadow-lg);
+    border: 1px solid var(--ui-border);
+    animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* Image Manager Specific */
+.image-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 10px;
+}
+.image-preview-box {
+    width: 100%; aspect-ratio: 16/9;
+    background-color: var(--color-gray-100);
+    border: 2px dashed var(--ui-border);
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    background-size: cover; background-position: center;
+}
+.image-preview-box:hover { border-color: var(--accent-secondary); }
+.image-preview-box.is-set { border-style: solid; }
+.image-preview-box.logo-box { aspect-ratio: 1/1; width: 80px; margin: 0 auto; }
+.btn-img-clear {
+    position: absolute; top: 4px; right: 4px;
+    background: rgba(0,0,0,0.5); color: #fff;
+    border-radius: 50%; width: 24px; height: 24px;
+    border: none; cursor: pointer; display: none;
+}
+.image-preview-box.is-set .btn-img-clear { display: block; }
+
+/* Color Palettes */
+.color-plate-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 2px solid var(--ui-border); cursor: pointer;
+    transition: transform 0.2s; position: relative;
+}
+.color-plate-btn.active { border-color: var(--ui-text); transform: scale(1.1); }
+.palette-preview { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 8px; }
+.palette-swatch { flex: 1; height: 100%; }
+
+/* Text Links */
+.subtle-action-area {
+    margin-top: 30px; padding-top: 15px; border-top: 1px solid var(--ui-border);
+    display: flex; justify-content: center; gap: 20px; font-size: 0.8rem;
+}
+.text-link {
+    cursor: pointer; color: var(--color-gray-400); text-decoration: underline;
+    background: none; border: none; font-size: 0.8rem;
+}
+.text-link.danger:hover { color: #ef4444; }
+
+/* Icons */
+svg { width: 20px; height: 20px; fill: currentColor; }
+
+.toast {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--ui-text); color: var(--ui-bg);
+    padding: 10px 20px; border-radius: 20px;
+    font-size: 0.9rem; z-index: 300; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.toast.active { opacity: 1; top: 80px; }
+
+/* Image Upload UI in Main Form */
+.image-upload-area {
+    border: 2px dashed var(--ui-border);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    background: var(--color-gray-100);
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+.image-upload-area:hover { border-color: var(--accent-secondary); background: rgba(34, 174, 201, 0.05); }
+.image-upload-label { font-size: 0.85rem; color: var(--color-gray-600); pointer-events: none; }
+.image-preview-wrapper {
+    position: relative; width: 100%; height: 180px;
+    border-radius: var(--radius-sm); overflow: hidden;
+    background-size: cover; background-position: center;
+    display: none;
+    margin-bottom: 10px;
+    border: 1px solid var(--ui-border);
+}
+.image-preview-wrapper.has-image { display: block; }
+.btn-remove-image {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(0,0,0,0.6); color: #fff;
+    border: none; border-radius: 50%; width: 28px; height: 28px;
+    font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+}
+.btn-remove-image:hover { background: rgba(239, 68, 68, 0.9); }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="app-header">
+    <div class="app-logo">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
+        <span>秒速ホームページ工房</span>
+    </div>
+    <div class="app-controls">
+        <button class="icon-btn" id="btn-guide" title="使い方">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-settings" title="設定">
+            <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0 .59-.22L3.16 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        </button>
+    </div>
+</header>
+
+<!-- Main -->
+<main class="app-main">
+    <!-- Editor -->
+    <div class="editor-panel">
+        <div class="config-section">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div class="input-group">
+                    <label class="input-label">業種</label>
+                    <select id="sel-industry" class="select-field" style="font-weight:700; color:var(--accent-primary);">
+                        <option value="renovation">内装・リフォーム</option>
+                        <option value="insurance">保険代理店</option>
+                        <option value="pro">士業・専門家</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">フォント</label>
+                    <select id="sel-font" class="select-field">
+                        <option value="gothic">ゴシック（標準）</option>
+                        <option value="mincho">明朝（信頼・高級）</option>
+                        <option value="maru">丸ゴシック風</option>
+                        <option value="meiryo">メイリオ</option>
+                        <option value="kyokasho">教科書体</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <label class="input-label">サイト配色</label>
+                    <label class="toggle-switch" title="タイトルを袋文字にする">
+                        <input type="checkbox" id="chk-outline" class="toggle-input">
+                        <div class="toggle-slider"></div>
+                        <span style="font-size:0.8rem; color:var(--color-gray-600);">袋文字タイトル</span>
+                    </label>
+                </div>
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <button class="color-plate-btn" data-color="#22AEC9" style="background:#22AEC9;" title="シアン"></button>
+                    <button class="color-plate-btn" data-color="#F59E0B" style="background:#F59E0B;" title="オレンジ"></button>
+                    <button class="color-plate-btn" data-color="#10B981" style="background:#10B981;" title="グリーン"></button>
+                    <button class="color-plate-btn" data-color="#3b82f6" style="background:#3b82f6;" title="ブルー"></button>
+                    <div style="display:flex; align-items:center;">
+                        <input type="color" id="inp-accent-color" value="#22AEC9" style="height:32px; width:32px; padding:0; border:none; background:none; cursor:pointer;">
+                    </div>
+                </div>
+                <div id="palette-preview" class="palette-preview">
+                    <div class="palette-swatch" id="swatch-main" style="background:#22AEC9"></div>
+                    <div class="palette-swatch" id="swatch-sub" style="background:#d3f3f9"></div>
+                    <div class="palette-swatch" id="swatch-acc" style="background:#c93d22"></div>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">文章トーン</label>
+                <select id="sel-tone" class="select-field">
+                    <option value="soft">やわらかい</option>
+                    <option value="standard">標準</option>
+                    <option value="hard">かため・信頼</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Easy Mode Banner -->
+        <div class="action-banner-group">
+            <button id="btn-easy-mode" class="action-banner banner-easy">
+                <span>✨ 素材チェック（かんたん作成）</span>
+            </button>
+            <button id="btn-image-manager" class="action-banner banner-image">
+                <span>📷 画像管理・差し替え</span>
+            </button>
+        </div>
+
+        <div class="form-container">
+            <!-- Basic Info -->
+            <div class="form-section open">
+                <div class="form-header">基本情報</div>
+                <div class="form-body">
+                    <div class="input-group">
+                        <label class="input-label">会社名・屋号 <span style="color:red">*</span></label>
+                        <input type="text" id="inp-company" class="input-field" placeholder="例：株式会社未来工務店">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">キャッチコピー</label>
+                        <select id="sel-catch" class="select-field"></select>
+                        <input type="text" id="inp-catch-free" class="input-field" placeholder="自由入力（こちらが優先）">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">電話番号</label>
+                        <input type="tel" id="inp-tel" class="input-field" placeholder="03-1234-5678">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">対応エリア</label>
+                        <input type="text" id="inp-area" class="input-field" placeholder="例：東京都全域">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">営業時間</label>
+                        <input type="text" id="inp-hours" class="input-field" placeholder="例：9:00〜18:00（水曜定休）">
+                    </div>
+                    <!-- Direct Hero Image Edit in Form -->
+                    <div class="input-group" style="margin-top:10px;">
+                         <label class="input-label">メイン画像 (簡易変更)</label>
+                         <div class="image-preview-wrapper" id="hero-preview-wrapper">
+                             <div id="hero-preview" style="width:100%; height:100%; background-size:cover; background-position:center;"></div>
+                             <button class="btn-remove-image" id="btn-remove-image" title="画像を削除">×</button>
+                         </div>
+                         <label class="image-upload-area">
+                             <input type="file" id="inp-hero-image" accept="image/*" style="display:none;">
+                             <div class="image-upload-label">
+                                 <span style="font-size:1.5rem; display:block; margin-bottom:4px;">📷</span>
+                                 タップして写真を変更<br>
+                                 <span style="font-size:0.7rem; opacity:0.7;">推奨: 16:9 (1200x630)</span>
+                             </div>
+                         </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-header">サービス・強み</div>
+                <div class="form-body">
+                    <div class="input-group">
+                        <label class="input-label">強み（3つ選択）</label>
+                        <select id="sel-point1" class="select-field mb-2"></select>
+                        <select id="sel-point2" class="select-field mb-2"></select>
+                        <select id="sel-point3" class="select-field mb-2"></select>
+                        <input type="text" id="inp-point-free" class="input-field mt-2" placeholder="自由入力">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-header">問い合わせ導線</div>
+                <div class="form-body">
+                    <div class="input-group">
+                        <label class="input-label">CTAボタン文言</label>
+                        <select id="sel-cta" class="select-field"></select>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">受付方法</label>
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="chk-tel" checked> 電話</label>
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="chk-line"> LINE</label>
+                        <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="chk-form" checked> フォーム</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Button (Relocated) -->
+            <div class="export-area">
+                <button id="btn-export" class="btn btn-primary btn-large">
+                    <svg viewBox="0 0 24 24" style="margin-right:8px;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                    HTML書き出し
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-panel">
+        <div class="preview-frame-container">
+            <iframe id="preview-frame" class="preview-iframe" title="Preview"></iframe>
+        </div>
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="app-footer">
+    <div class="mobile-toggle-group">
+        <button id="btn-mode-edit" class="toggle-btn-m active">編集</button>
+        <button id="btn-mode-preview" class="toggle-btn-m">プレビュー</button>
+    </div>
+    <div class="app-copyright">
+        テスト版（ベータ版） &copy; 2026 SPC
+    </div>
+</footer>
+
+<!-- Modals -->
+
+<!-- 1. Easy Mode (Material Check) -->
+<div class="modal-overlay" id="modal-easy">
+    <div class="modal">
+        <h3 style="margin-top:0; border-bottom:1px solid var(--ui-border); padding-bottom:10px;">✨ 素材チェック（かんたん作成）</h3>
+        <p style="font-size:0.85rem; color:#666;">以下の質問に答えると、AIが仮の文章を作成します。</p>
+        <div style="display:flex; flex-direction:column; gap:16px; margin-top:16px;">
+            <div class="input-group"><label class="input-label">会社名・屋号</label><input type="text" id="easy-company" class="input-field"></div>
+            <div class="input-group"><label class="input-label">対応エリア</label><input type="text" id="easy-area" class="input-field"></div>
+            <div class="input-group"><label class="input-label">一番アピールしたいサービス</label><input type="text" id="easy-service" class="input-field" placeholder="例：キッチンリフォーム"></div>
+            <div class="input-group"><label class="input-label">他社と違う強み</label><input type="text" id="easy-strength" class="input-field" placeholder="例：地域密着のスピード対応"></div>
+            <div class="input-group">
+                <label class="input-label">優先する連絡手段</label>
+                <select id="easy-contact" class="select-field">
+                    <option value="tel">電話（お急ぎの方へ）</option>
+                    <option value="line">LINE（気軽に相談）</option>
+                    <option value="form">メールフォーム（じっくり相談）</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label class="input-label">写真素材の有無</label>
+                <select id="easy-photo" class="select-field">
+                    <option value="none">まだない（仮画像を使用）</option>
+                    <option value="have">ある（後で設定）</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button id="btn-easy-cancel" class="btn btn-ghost" style="flex:1; border:1px solid var(--ui-border);">閉じる</button>
+                <button id="btn-easy-submit" class="btn btn-primary" style="flex:2;">反映して作成</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Image Manager -->
+<div class="modal-overlay" id="modal-images">
+    <div class="modal">
+        <h3 style="margin-top:0; border-bottom:1px solid var(--ui-border); padding-bottom:10px;">📷 画像管理</h3>
+        <p style="font-size:0.8rem; color:#666;">クリックして画像をアップロード（自動で軽量化されます）</p>
+        
+        <div style="margin-bottom:20px;">
+            <div class="input-label">メインビジュアル (推奨 1200x630)</div>
+            <div class="image-preview-box" id="box-hero" data-target="hero">
+                <span style="opacity:0.5; font-size:2rem;">+</span>
+                <button class="btn-img-clear">×</button>
+            </div>
+        </div>
+
+        <div style="margin-bottom:20px; text-align:center;">
+             <div class="input-label">ロゴ画像 (正方形推奨)</div>
+             <div class="image-preview-box logo-box" id="box-logo" data-target="logo">
+                <span style="opacity:0.5; font-size:1.5rem;">+</span>
+                <button class="btn-img-clear">×</button>
+             </div>
+        </div>
+
+        <div class="input-label">サブ画像 (事例など最大3枚)</div>
+        <div class="image-grid">
+            <div class="image-preview-box" id="box-sub1" data-target="sub1"><span style="opacity:0.5;">1</span><button class="btn-img-clear">×</button></div>
+            <div class="image-preview-box" id="box-sub2" data-target="sub2"><span style="opacity:0.5;">2</span><button class="btn-img-clear">×</button></div>
+            <div class="image-preview-box" id="box-sub3" data-target="sub3"><span style="opacity:0.5;">3</span><button class="btn-img-clear">×</button></div>
+        </div>
+        <input type="file" id="hidden-file-input" accept="image/*" style="display:none;">
+        <div style="margin-top:20px; text-align:right;">
+             <button id="btn-images-close" class="btn btn-primary" style="width:100%;">完了</button>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Settings -->
+<div class="modal-overlay" id="modal-settings">
+    <div class="modal">
+        <h3 style="margin-top:0;">アプリ設定</h3>
+        <div class="input-group">
+            <label class="input-label">アクセス・SNS連携</label>
+            <input type="text" id="inp-sns-map" class="input-field mb-2" placeholder="Googleマップ URL">
+            <input type="text" id="inp-sns-form" class="input-field mb-2" placeholder="お問い合わせフォームURL">
+            <input type="text" id="inp-sns-line" class="input-field mb-2" placeholder="公式LINE URL">
+            <input type="text" id="inp-sns-insta" class="input-field mb-2" placeholder="Instagram URL">
+            <input type="text" id="inp-sns-fb" class="input-field mb-2" placeholder="Facebook URL">
+            <input type="text" id="inp-sns-x" class="input-field mb-2" placeholder="X (Twitter) URL">
+        </div>
+        <div class="form-section" style="margin-top:16px;">
+            <div class="form-header">テンプレート編集</div>
+            <div class="form-body">
+                <div class="input-group"><label class="input-label">キャッチ候補 (改行区切り)</label><textarea id="tpl-edit-catch" class="textarea-field"></textarea></div>
+                <div class="input-group"><label class="input-label">強みリスト (改行区切り)</label><textarea id="tpl-edit-points" class="textarea-field"></textarea></div>
+                <button id="btn-save-tpl" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+        <div class="subtle-action-area">
+            <button id="btn-demo" class="text-link">デモデータを反映</button>
+            <button id="btn-clear" class="text-link danger">入力をクリア</button>
+        </div>
+        <button id="btn-settings-close" class="btn btn-ghost" style="width:100%; margin-top:10px; border:1px solid #ddd;">閉じる</button>
+    </div>
+</div>
+
+<!-- 4. Guide -->
+<div class="modal-overlay" id="modal-guide">
+    <div class="modal">
+        <h3>🔰 使い方ガイド (30秒)</h3>
+        <ol style="padding-left:20px; line-height:1.8;">
+            <li>「<b>素材チェック</b>」で基本情報を入力</li>
+            <li>「<b>画像管理</b>」でスマホの写真をアップ</li>
+            <li>プレビューを見ながら微調整</li>
+            <li>「<b>HTML書き出し</b>」でファイル保存</li>
+        </ol>
+        <p style="font-size:0.85rem; color:#666; background:#f5f5f5; padding:10px; border-radius:8px;">
+            保存されたHTMLファイルは、レンタルサーバーにアップロードすればそのままホームページとして公開できます。
+        </p>
+        <button id="btn-guide-close" class="btn btn-primary" style="width:100%; margin-top:10px;">はじめる</button>
+    </div>
+</div>
+
+<!-- Warning -->
+<div class="modal-overlay" id="modal-warning">
+    <div class="modal" style="text-align:center;">
+        <h3 style="color:#ef4444;">入力チェック</h3>
+        <p id="warning-msg"></p>
+        <button id="btn-warning-close" class="btn btn-primary" style="margin:0 auto;">OK</button>
+    </div>
+</div>
+
+<!-- Export Confirm -->
+<div class="modal-overlay" id="modal-export">
+    <div class="modal" style="text-align:center;">
+        <h3>書き出しの確認</h3>
+        <p>現在の内容でHTMLファイルを生成しますか？</p>
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:20px;">
+            <button id="btn-export-cancel" class="btn btn-ghost" style="border:1px solid #ddd;">キャンセル</button>
+            <button id="btn-export-confirm" class="btn btn-primary">ダウンロード</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast">保存しました</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // =========================================
+    // Helpers & Constants (Top Level)
+    // =========================================
+    const getEl = (id) => document.getElementById(id);
+
+    function showToast(msg) {
+        const t = getEl('toast');
+        if(!t) return;
+        t.textContent = msg;
+        t.classList.add('active');
+        setTimeout(() => t.classList.remove('active'), 2000);
+    }
+    
+    function showWarning(text) {
+        const m = getEl('warning-msg');
+        if(m) m.textContent = text;
+        const modal = getEl('modal-warning');
+        if(modal) modal.classList.add('active');
+    }
+
+    function safeHTML(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+    
+    function debounce(func, wait) {
+        let timeout;
+        return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
+    // --- Logic Functions (Declared before init) ---
+    function generateSiteHTML() {
+        const d = state.data;
+        const ind = getIndustryData();
+        const colors = ColorUtils.generatePalette(state.settings.accent);
+        const font = FONTS[state.settings.font];
+        const isPro = state.industry !== 'renovation';
+        
+        const h1Text = d.catchFree || d.catch || d.company || "Welcome";
+        const heroBg = d.images.hero ? `url(${d.images.hero})` : `linear-gradient(135deg, ${colors.primary}, ${colors.accent})`;
+        const logoImg = d.images.logo ? `<img src="${d.images.logo}" alt="Logo" style="height:40px; width:auto;">` : `<div style="font-weight:bold; font-size:1.5rem; color:${colors.primary}">${d.company||'COMPANY'}</div>`;
+        
+        const pointsHTML = [...d.points, d.pointFree].filter(x=>x).map(p => `<div class="card"><h3>${safeHTML(p)}</h3></div>`).join('');
+        const servicesHTML = ind.services.map((s,i) => {
+            const img = d.images[`sub${(i%3)+1}`];
+            const bg = img ? `background-image:url(${img})` : `background-color:${colors.secondary}`;
+            return `<div class="card"><div class="svc-img" style="${bg}"></div><h4>${s}</h4></div>`;
+        }).join('');
+        const faqHTML = ind.faq.map(f => `<div class="faq">Q. ${f.q}<br><span style="font-size:0.9em; opacity:0.8">A. ${f.a}</span></div>`).join('');
+        
+        let contactHtml = '';
+        if(d.contactMethods.form) contactHtml += `<a href="${d.sns.form||'#'}" class="btn-main">${d.ctaText||'お問い合わせ'}</a>`;
+        let telHtml = d.contactMethods.tel && d.tel ? `<a href="tel:${d.tel}" class="btn-tel">📞 ${d.tel}</a>` : '';
+
+        const disclaimer = isPro ? `<p style="font-size:0.7rem; color:#999; margin-top:20px;">※ご契約や相談内容により対応が異なる場合があります。詳細はお問い合わせください。</p>` : '';
+
+        return `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${safeHTML(d.company) || '公式サイト'}</title>
+<meta name="description" content="${safeHTML(d.company)}の公式サイトです。${ind.label}に関するご相談を承ります。">
+<style>
+    body { margin:0; font-family:${font}; color:#333; line-height:1.6; }
+    a { text-decoration:none; }
+    header { padding:15px 5%; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; }
+    .hero { height:350px; display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; background:${heroBg} center/cover; position:relative; }
+    .hero::before { content:''; position:absolute; inset:0; background:rgba(0,0,0,0.4); }
+    .hero-content { position:relative; z-index:1; padding:20px; }
+    .hero h1 { font-size:2rem; margin-bottom:1rem; ${state.settings.textOutline ? `text-shadow:2px 2px 0 ${colors.primary};` : ''} }
+    section { padding:60px 5%; }
+    h2 { text-align:center; color:${colors.primary}; margin-bottom:40px; font-size:1.8rem; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; }
+    .card { padding:20px; border-radius:8px; background:#f9f9f9; text-align:center; border:1px solid #eee; }
+    .svc-img { width:100%; height:150px; background-size:cover; background-position:center; margin-bottom:15px; border-radius:4px; }
+    .faq { border-bottom:1px solid #eee; padding:15px 0; }
+    .footer { background:#333; color:#fff; padding:40px 5%; text-align:center; }
+    .btn-main { display:inline-block; padding:12px 30px; background:${colors.accent}; color:#fff; border-radius:30px; font-weight:bold; }
+    .btn-tel { display:inline-block; padding:12px 30px; background:#22c55e; color:#fff; border-radius:30px; font-weight:bold; margin-top:10px; }
+    @media(max-width:768px) { nav { display:none; } .hero h1 { font-size:1.5rem; } }
+</style>
+</head>
+<body>
+    <header>${logoImg}<nav><a href="#about" style="color:#333">特徴</a> <a href="#service" style="color:#333">サービス</a></nav></header>
+    <div class="hero">
+        <div class="hero-content">
+            <h1>${safeHTML(h1Text)}</h1>
+            <p>${d.area ? safeHTML(d.area) + 'エリア対応' : ''}</p>
+            ${contactHtml}
+        </div>
+    </div>
+    <section id="about">
+        <h2>選ばれる理由</h2>
+        <div class="grid">${pointsHTML}</div>
+    </section>
+    <section id="service">
+        <h2>サービス案内</h2>
+        <div class="grid">${servicesHTML}</div>
+    </section>
+    <section id="faq">
+        <h2>よくある質問</h2>
+        <div style="max-width:800px; margin:0 auto;">${faqHTML}</div>
+    </section>
+    <section style="text-align:center; background:${colors.secondary}22;">
+        <h2>お問い合わせ</h2>
+        <p>お気軽にご相談ください。</p>
+        ${contactHtml} <br> ${telHtml}
+    </section>
+    <footer class="footer">
+        <div>${safeHTML(d.company)}</div>
+        <div>${safeHTML(d.area)} ${safeHTML(d.hours)}</div>
+        ${disclaimer}
+        <p style="margin-top:20px; font-size:0.8rem; opacity:0.6;">© ${new Date().getFullYear()} ${safeHTML(d.company)}</p>
+    </footer>
+</body>
+</html>`.trim();
+    }
+    
+    function renderPreview() {
+        const html = generateSiteHTML();
+        const f = getEl('preview-frame');
+        if(f) f.srcdoc = html;
+    }
+
+    const ColorUtils = {
+        hexToRgb: (hex) => {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : { r: 0, g: 0, b: 0 };
+        },
+        rgbToHsl: (r, g, b) => {
+            r /= 255, g /= 255, b /= 255;
+            const max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+            if (max == min) { h = s = 0; } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+            return { h: h * 360, s: s * 100, l: l * 100 };
+        },
+        hslToHex: (h, s, l) => {
+            l /= 100;
+            const a = s * Math.min(l, 1 - l) / 100;
+            const f = n => {
+                const k = (n + h / 30) % 12;
+                const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                return Math.round(255 * color).toString(16).padStart(2, '0');
+            };
+            return `#${f(0)}${f(8)}${f(4)}`;
+        },
+        generatePalette: (hex) => {
+            const rgb = ColorUtils.hexToRgb(hex);
+            const hsl = ColorUtils.rgbToHsl(rgb.r, rgb.g, rgb.b);
+            const secondary = ColorUtils.hslToHex(hsl.h, Math.max(0, hsl.s - 20), Math.min(96, hsl.l + 45));
+            const accent = ColorUtils.hslToHex((hsl.h + 180) % 360, Math.min(100, hsl.s + 10), 50);
+            return { primary: hex, secondary, accent };
+        }
+    };
+
+    const DEFAULT_TEMPLATES = {
+        renovation: {
+            label: "内装・リフォーム",
+            bgPattern: `background: linear-gradient(135deg, #22AEC9 0%, #15798e 100%);`,
+            services: ["内装リフォーム", "水回り工事", "原状回復", "店舗改装", "外壁塗装"],
+            faq: [{q: "見積もりは無料ですか？", a: "はい、無料です。"}, {q: "工期は？", a: "内容によりますが最短1日から可能です。"}],
+            points: ["完全自社施工", "創業20年の実績", "アフターフォロー充実", "女性プランナー在籍", "最短即日対応"],
+            phrases: { soft: ["おうちの「困った」を解決"], standard: ["確かな技術で理想の住まいを"], hard: ["高品質な施工をお約束"] },
+            easySample: { company: "未来工務店", area: "東京都全域", service: "キッチンリフォーム", strength: "女性プランナーによる丁寧なヒアリング", contact: "line" }
+        },
+        insurance: {
+            label: "保険代理店",
+            bgPattern: `background: linear-gradient(135deg, #1e40af 0%, #172554 100%);`,
+            services: ["生命保険", "医療・がん保険", "損害保険", "法人向け保険", "相続対策"],
+            faq: [{q: "相談料は？", a: "何度でも無料です。"}, {q: "無理な勧誘は？", a: "一切いたしません。"}],
+            points: ["取扱30社以上", "FP資格保有", "土日祝対応", "キッズスペースあり", "訪問対応可"],
+            phrases: { soft: ["未来の安心をご一緒に"], standard: ["あなたに最適なプランを"], hard: ["プロによる保障設計"] },
+            easySample: { company: "安心ライフ", area: "関東エリア", service: "ライフプランの見直し", strength: "無理な勧誘なし・中立的なアドバイス", contact: "form" }
+        },
+        pro: {
+            label: "士業・専門家",
+            bgPattern: `background: linear-gradient(135deg, #334155 0%, #0f172a 100%);`,
+            services: ["税務・会計", "会社設立", "相続・遺言", "労務管理", "契約書作成"],
+            faq: [{q: "初回の相談は？", a: "60分無料です。"}, {q: "対応エリアは？", a: "全国対応可能です。"}],
+            points: ["明確な料金体系", "迅速レスポンス", "解決実績多数", "他士業連携", "親身な対応"],
+            phrases: { soft: ["ひとりで悩まずご相談を"], standard: ["法務の力でビジネスを加速"], hard: ["戦略的なソリューション"] },
+            easySample: { company: "ひかり法務事務所", area: "全国対応（オンライン可）", service: "相続税の申告・対策", strength: "初回60分無料相談・土日対応可", contact: "tel" }
+        }
+    };
+    
+    const FONTS = { gothic:"sans-serif", mincho:"serif", maru:"'Varela Round', sans-serif", meiryo:"sans-serif", kyokasho:"serif" };
+    const TONES = { soft:{cta:"相談する"}, standard:{cta:"お問い合わせ"}, hard:{cta:"申し込む"} };
+
+    let state = {
+        industry: 'renovation', tone: 'standard',
+        data: { company: '', catch: '', catchFree: '', tel: '', area: '', hours: '', points: ['', '', ''], pointFree: '', ctaText: '', contactMethods: { tel: true, line: false, form: true }, sns: { map: '', line: '', insta: '', fb: '', x: '', form: '' }, images: { hero: '', logo: '', sub1: '', sub2: '', sub3: '' } },
+        settings: { theme: 'light', accent: '#22AEC9', font: 'gothic', textOutline: false, mobileMode: 'edit' },
+        templates: JSON.parse(JSON.stringify(DEFAULT_TEMPLATES))
+    };
+
+    let currentImgTarget = null;
+
+    // --- State & Data Functions ---
+    function getIndustryData() { return state.templates[state.industry] || DEFAULT_TEMPLATES.renovation; }
+
+    function saveState() {
+        try {
+            localStorage.setItem('quick_hp_maker_state', JSON.stringify(state));
+        } catch(e) { console.error('Storage failed', e); }
+    }
+
+    function loadState() {
+        try {
+            const s = localStorage.getItem('quick_hp_maker_state');
+            if (s) {
+                const parsed = JSON.parse(s);
+                state = { ...state, ...parsed };
+                if(!state.data.sns) state.data.sns = { map: '', line: '', insta: '', fb: '', x: '', form: '' };
+                if(!state.data.images) state.data.images = { hero: '', logo: '', sub1: '', sub2: '', sub3: '' };
+                if(!state.templates) state.templates = JSON.parse(JSON.stringify(DEFAULT_TEMPLATES));
+            } else {
+                setDemoData();
+            }
+        } catch(e) {
+            console.error('Load failed', e);
+        }
+    }
+
+    function getFormData() {
+        const val = (id) => { const el = getEl(id); return el ? el.value : ''; };
+        const chk = (id) => { const el = getEl(id); return el ? el.checked : false; };
+        const mapVals = (ids) => ids.map(id => val(id));
+
+        state.data.company = val('inp-company');
+        state.data.catch = val('sel-catch');
+        state.data.catchFree = val('inp-catch-free');
+        state.data.tel = val('inp-tel');
+        state.data.area = val('inp-area');
+        state.data.hours = val('inp-hours');
+        state.data.points = mapVals(['sel-point1', 'sel-point2', 'sel-point3']);
+        state.data.pointFree = val('inp-point-free');
+        state.data.ctaText = val('sel-cta');
+        state.data.contactMethods = { tel: chk('chk-tel'), line: chk('chk-line'), form: chk('chk-form') };
+        state.data.sns.map = val('inp-sns-map');
+        state.data.sns.form = val('inp-sns-form');
+        state.data.sns.line = val('inp-sns-line');
+        state.data.sns.insta = val('inp-sns-insta');
+        state.data.sns.fb = val('inp-sns-fb');
+        state.data.sns.x = val('inp-sns-x');
+        
+        saveState();
+        renderPreview();
+    }
+
+    function setFormData() {
+        const setVal = (id, v) => { const el = getEl(id); if(el) el.value = v || ''; };
+        const setChk = (id, v) => { const el = getEl(id); if(el) el.checked = v; };
+
+        setVal('inp-company', state.data.company);
+        setVal('inp-catch-free', state.data.catchFree);
+        setVal('inp-tel', state.data.tel);
+        setVal('inp-area', state.data.area);
+        setVal('inp-hours', state.data.hours);
+        setVal('inp-point-free', state.data.pointFree);
+        setChk('chk-tel', state.data.contactMethods.tel);
+        setChk('chk-line', state.data.contactMethods.line);
+        setChk('chk-form', state.data.contactMethods.form);
+        
+        setVal('inp-sns-map', state.data.sns.map);
+        setVal('inp-sns-form', state.data.sns.form);
+        setVal('inp-sns-line', state.data.sns.line);
+        setVal('inp-sns-insta', state.data.sns.insta);
+        setVal('inp-sns-fb', state.data.sns.fb);
+        setVal('inp-sns-x', state.data.sns.x);
+
+        setTimeout(() => {
+            setVal('sel-catch', state.data.catch);
+            setVal('sel-cta', state.data.ctaText);
+            ['sel-point1', 'sel-point2', 'sel-point3'].forEach((id, i) => setVal(id, state.data.points[i]));
+        }, 10);
+
+        const heroWrap = getEl('hero-preview-wrapper');
+        const heroPrev = getEl('hero-preview');
+        if(heroWrap && heroPrev) {
+            if(state.data.images.hero) {
+                heroWrap.classList.add('has-image');
+                heroPrev.style.backgroundImage = `url(${state.data.images.hero})`;
+            } else {
+                heroWrap.classList.remove('has-image');
+                heroPrev.style.backgroundImage = 'none';
+            }
+        }
+    }
+
+    function updateFormOptions() {
+        const d = getIndustryData();
+        const p = d.phrases[state.tone];
+        const catchSel = getEl('sel-catch');
+        if(catchSel) catchSel.innerHTML = p.map(s => `<option value="${s}">${s}</option>`).join('');
+        
+        const ptHtml = `<option value="">選択...</option>` + d.points.map(s => `<option value="${s}">${s}</option>`).join('');
+        ['sel-point1', 'sel-point2', 'sel-point3'].forEach(id => { const el = getEl(id); if(el) el.innerHTML = ptHtml; });
+        
+        const cta = state.tone === 'soft' ? "まずは気軽に相談" : state.tone === 'hard' ? "無料相談を予約" : "お問い合わせ";
+        const ctaSel = getEl('sel-cta');
+        if(ctaSel) ctaSel.innerHTML = `<option value="${cta}">${cta}</option><option value="詳しくはこちら">詳しくはこちら</option>`;
+    }
+
+    function setDemoData() {
+        const tpl = getIndustryData();
+        state.data.company = state.industry==='renovation' ? '未来工務店' : state.industry==='insurance' ? '安心ライフ' : 'ひかり法務';
+        state.data.catch = tpl.phrases[state.tone][0];
+        state.data.tel = '03-1234-5678';
+        state.data.area = '東京都全域';
+        state.data.hours = '9:00-18:00';
+        state.data.points = tpl.points;
+        state.data.sns = { map: '', line: '', insta: '', fb: '', x: '', form: 'https://example.com/contact' };
+
+        if(tpl.easySample) {
+            const setEasy = (id, v) => { const el = getEl(id); if(el) el.value = v; };
+            setEasy('easy-company', tpl.easySample.company || state.data.company);
+            setEasy('easy-area', tpl.easySample.area || state.data.area);
+            setEasy('easy-service', tpl.easySample.service || tpl.easySample.q1);
+            setEasy('easy-strength', tpl.easySample.strength || tpl.easySample.q2);
+            setEasy('easy-contact', tpl.easySample.contact || tpl.easySample.q3);
+        }
+
+        setFormData(); saveState(); renderPreview();
+        showToast('デモデータを反映しました');
+    }
+    
+    function clearData() {
+        state.data = { company:'', catch:'', catchFree:'', tel:'', area:'', hours:'', points:['','',''], pointFree:'', ctaText:'', contactMethods:{tel:true,line:false,form:true}, sns:{ map: '', line: '', insta: '', fb: '', x: '', form: '' }, images:{hero:'',logo:'',sub1:'',sub2:'',sub3:''} };
+        const setEasy = (id, v) => { const el = getEl(id); if(el) el.value = v; };
+        setEasy('easy-company', ''); setEasy('easy-area', ''); setEasy('easy-service', ''); setEasy('easy-strength', '');
+        
+        setFormData(); saveState(); renderPreview(); showToast('クリアしました');
+    }
+
+    function render() {
+        const elInd = getEl('sel-industry'); if(elInd) elInd.value = state.industry;
+        const elTone = getEl('sel-tone'); if(elTone) elTone.value = state.tone;
+        const elFont = getEl('sel-font'); if(elFont) elFont.value = state.settings.font;
+        const elOut = getEl('chk-outline'); if(elOut) elOut.checked = state.settings.textOutline;
+        
+        document.documentElement.setAttribute('data-theme', state.settings.theme);
+        const p = ColorUtils.generatePalette(state.settings.accent);
+        document.documentElement.style.setProperty('--accent-primary', p.primary);
+        document.documentElement.style.setProperty('--accent-secondary', p.secondary);
+        
+        const swatchMain = getEl('swatch-main'); if(swatchMain) swatchMain.style.background = p.primary;
+        const swatchSub = getEl('swatch-sub'); if(swatchSub) swatchSub.style.background = p.secondary;
+        const swatchAcc = getEl('swatch-acc'); if(swatchAcc) swatchAcc.style.background = p.accent;
+
+        const btnEdit = getEl('btn-mode-edit');
+        const btnPrev = getEl('btn-mode-preview');
+        
+        if(state.settings.mobileMode === 'preview') {
+            document.body.classList.add('mode-preview');
+            if(btnEdit) btnEdit.classList.remove('active');
+            if(btnPrev) btnPrev.classList.add('active');
+        } else {
+            document.body.classList.remove('mode-preview');
+            if(btnEdit) btnEdit.classList.add('active');
+            if(btnPrev) btnPrev.classList.remove('active');
+        }
+    }
+
+    function toggleMobileMode(mode) {
+        state.settings.mobileMode = mode;
+        render();
+    }
+
+    function submitEasyMode() {
+        const val = (id) => { const el = getEl(id); return el ? el.value.trim() : ''; };
+        
+        state.data.company = val('easy-company');
+        state.data.area = val('easy-area');
+        const srv = val('easy-service');
+        const str = val('easy-strength');
+        
+        state.data.catchFree = srv ? `${srv}ならお任せください` : '';
+        state.data.pointFree = str;
+        
+        const contact = val('easy-contact');
+        state.data.contactMethods = { tel: contact==='tel', line: contact==='line', form: contact==='form' };
+        
+        setFormData(); getFormData();
+        const modal = getEl('modal-easy');
+        if(modal) modal.classList.remove('active');
+        showToast('反映しました');
+    }
+
+    function handleImageFile(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        if(file.size > 5*1024*1024) { alert("5MB以下の画像にしてください"); return; }
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const MAX = 1200;
+                let w = img.width, h = img.height;
+                if(w>h) { if(w>MAX) { h*=MAX/w; w=MAX; } } else { if(h>MAX) { w*=MAX/h; h=MAX; } }
+                canvas.width = w; canvas.height = h;
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                ctx.drawImage(img, 0, 0, w, h);
+                state.data.images[currentImgTarget] = canvas.toDataURL('image/jpeg', 0.85);
+                
+                if(currentImgTarget === 'hero') setFormData();
+                updateImageManagerPreviews();
+                saveState(); renderPreview(); showToast('画像を設定しました');
+            }
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+        e.target.value = '';
+    }
+
+    function updateImageManagerPreviews() {
+        Object.keys(state.data.images).forEach(key => {
+            const box = getEl(`box-${key}`);
+            if(!box) return;
+            const data = state.data.images[key];
+            if(data) {
+                box.style.backgroundImage = `url(${data})`;
+                box.classList.add('is-set');
+                const span = box.querySelector('span'); if(span) span.style.display = 'none';
+            } else {
+                box.style.backgroundImage = '';
+                box.classList.remove('is-set');
+                const span = box.querySelector('span'); if(span) span.style.display = 'block';
+            }
+        });
+    }
+
+    function saveTemplate() {
+        const ind = state.industry;
+        const cVal = getEl('tpl-edit-catch') ? getEl('tpl-edit-catch').value : '';
+        const pVal = getEl('tpl-edit-points') ? getEl('tpl-edit-points').value : '';
+        state.templates[ind].phrases[state.tone] = cVal.split('\n');
+        state.templates[ind].points = pVal.split('\n');
+        saveState(); showToast('テンプレートを保存しました');
+    }
+
+    function exportHTML() {
+        if(!state.data.company) { showWarning("会社名が入力されていません"); return; }
+        if(state.data.contactMethods.tel && !state.data.tel) { showWarning("電話番号が入力されていません"); return; }
+        const m = getEl('modal-export');
+        if(m) m.classList.add('active');
+    }
+
+    function runExport() {
+        const html = generateSiteHTML();
+        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const date = new Date().toISOString().slice(0,10).replace(/-/g,'');
+        const comp = (state.data.company || 'sample').replace(/[\\/:*?"<>| ]/g, '_');
+        a.href = url;
+        a.download = `site_${state.industry}_${comp}_${date}.html`;
+        a.click();
+        URL.revokeObjectURL(url);
+        const m = getEl('modal-export');
+        if(m) m.classList.remove('active');
+        showToast('HTMLファイルをダウンロードしました');
+    }
+
+    // --- MAIN INITIALIZATION ---
+    function init() {
+        // 1. Load Data
+        loadState();
+
+        // 2. Setup UI
+        updateFormOptions();
+        setFormData();
+        render();
+
+        // 3. Event Listeners
+        
+        // Inputs (Debounced)
+        const inputs = [
+            'inp-company', 'inp-catch-free', 'inp-tel', 'inp-area', 'inp-hours', 'inp-point-free',
+            'inp-sns-map', 'inp-sns-form', 'inp-sns-line', 'inp-sns-insta', 'inp-sns-fb', 'inp-sns-x',
+            'tpl-edit-catch', 'tpl-edit-points'
+        ];
+        inputs.forEach(id => {
+            const el = getEl(id);
+            if(el) el.addEventListener('input', debounce(getFormData, 500));
+        });
+
+        // Selects & Checks
+        const changeInputs = [
+            'sel-catch', 'sel-cta', 'sel-point1', 'sel-point2', 'sel-point3',
+            'chk-tel', 'chk-line', 'chk-form'
+        ];
+        changeInputs.forEach(id => {
+            const el = getEl(id);
+            if(el) el.addEventListener('change', getFormData);
+        });
+
+        // Config
+        const elInd = getEl('sel-industry');
+        if(elInd) elInd.addEventListener('change', (e) => {
+            state.industry = e.target.value;
+            updateFormOptions();
+            getFormData(); 
+        });
+
+        const elFont = getEl('sel-font');
+        if(elFont) elFont.addEventListener('change', (e) => {
+            state.settings.font = e.target.value;
+            saveState(); renderPreview();
+        });
+
+        const elTone = getEl('sel-tone');
+        if(elTone) elTone.addEventListener('change', (e) => {
+            state.tone = e.target.value;
+            updateFormOptions();
+            getFormData();
+        });
+
+        const elOut = getEl('chk-outline');
+        if(elOut) elOut.addEventListener('change', (e) => {
+            state.settings.textOutline = e.target.checked;
+            saveState(); renderPreview();
+        });
+
+        const elCol = getEl('inp-accent-color');
+        if(elCol) elCol.addEventListener('change', (e) => {
+            state.settings.accent = e.target.value;
+            render(); saveState(); renderPreview();
+        });
+
+        document.querySelectorAll('.color-plate-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                state.settings.accent = btn.dataset.color;
+                getEl('inp-accent-color').value = state.settings.accent;
+                render(); saveState(); renderPreview();
+            });
+        });
+
+        // Buttons & Modals
+        const bindClick = (id, fn) => { const el = getEl(id); if(el) el.addEventListener('click', fn); };
+        
+        bindClick('btn-guide', () => getEl('modal-guide').classList.add('active'));
+        bindClick('btn-settings', () => {
+             const tpl = getIndustryData();
+             const c = getEl('tpl-edit-catch'); if(c) c.value = (tpl.phrases[state.tone]||[]).join('\n');
+             const p = getEl('tpl-edit-points'); if(p) p.value = (tpl.points||[]).join('\n');
+             getEl('modal-settings').classList.add('active');
+        });
+        
+        bindClick('btn-easy-mode', () => getEl('modal-easy').classList.add('active'));
+        bindClick('btn-image-manager', () => { updateImageManagerPreviews(); getEl('modal-images').classList.add('active'); });
+
+        ['btn-easy-cancel', 'btn-images-close', 'btn-settings-close', 'btn-guide-close', 'btn-warning-close', 'btn-export-cancel']
+            .forEach(id => bindClick(id, () => {
+                const el = getEl(id);
+                if(el) {
+                    const m = el.closest('.modal-overlay');
+                    if(m) m.classList.remove('active');
+                }
+            }));
+            
+        bindClick('btn-easy-submit', submitEasyMode);
+        bindClick('btn-save-tpl', saveTemplate);
+        bindClick('btn-demo', () => { setDemoData(); getEl('modal-settings').classList.remove('active'); });
+        bindClick('btn-clear', () => { clearData(); getEl('modal-settings').classList.remove('active'); });
+        bindClick('btn-export', exportHTML);
+        bindClick('btn-export-confirm', runExport);
+        bindClick('btn-mode-edit', () => toggleMobileMode('edit'));
+        bindClick('btn-mode-preview', () => toggleMobileMode('preview'));
+
+        // Images
+        const fInp = getEl('hidden-file-input');
+        if(fInp) fInp.addEventListener('change', handleImageFile);
+
+        const hInp = getEl('inp-hero-image');
+        if(hInp) hInp.addEventListener('change', (e) => { currentImgTarget='hero'; handleImageFile(e); });
+
+        bindClick('btn-remove-image', (e) => {
+            e.stopPropagation();
+            state.data.images.hero = '';
+            setFormData(); saveState(); renderPreview();
+        });
+
+        document.querySelectorAll('.image-preview-box').forEach(box => {
+            box.addEventListener('click', (e) => {
+                if(e.target.classList.contains('btn-img-clear')) {
+                    e.stopPropagation();
+                    const t = box.dataset.target;
+                    state.data.images[t] = '';
+                    if(t==='hero') setFormData();
+                    updateImageManagerPreviews(); saveState(); renderPreview();
+                } else {
+                    currentImgTarget = box.dataset.target;
+                    if(fInp) fInp.click();
+                }
+            });
+        });
+
+        // Form Sections
+        document.querySelectorAll('.form-header').forEach(h => {
+            h.addEventListener('click', () => {
+                h.parentElement.classList.toggle('open');
+            });
+        });
+        
+        // Initial Preview
+        renderPreview();
+    }
+
+    // Init
+    init();
+
+});
+</script>
+</body>
+</html>
