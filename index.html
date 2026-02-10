@@ -100,7 +100,7 @@ body {
 }
 
 /* =========================================
-   Editor Panel (Left) - NEW PHOTO FIRST UI
+   Editor Panel (Left)
    ========================================= */
 .editor-panel {
     background: var(--ui-surface);
@@ -130,7 +130,7 @@ body {
 }
 .step-title { font-weight: 700; font-size: 1.05rem; color: var(--ui-text); }
 
-/* Compact Inputs for Step 1 */
+/* Compact Inputs */
 .compact-grid {
     display: grid; grid-template-columns: 1fr; gap: 12px;
 }
@@ -154,7 +154,7 @@ body {
     content:''; position:absolute; inset:2px; border-radius:50%; background: var(--bg);
 }
 
-/* Photo Puzzle Deck (Step 2) */
+/* Photo Puzzle Deck */
 .photo-deck {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -262,6 +262,22 @@ body {
 
 iframe { width: 100%; height: 100%; border: none; }
 
+/* Fullscreen Overlay */
+.fullscreen-overlay {
+    position: fixed; inset: 0; background: #fff; z-index: 1000;
+    display: none; flex-direction: column;
+}
+.fullscreen-overlay.active { display: flex; animation: fadeIn 0.2s; }
+#fullscreen-frame { flex: 1; width: 100%; border: none; }
+.btn-floating-close {
+    position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+    background: #1e293b; color: #fff; padding: 12px 24px;
+    border-radius: 50px; border: none; font-weight: bold; cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px;
+    font-size: 1rem; z-index: 1001; transition: transform 0.2s;
+}
+.btn-floating-close:active { transform: translateX(-50%) scale(0.95); }
+
 /* Utility */
 .btn {
     padding: 8px 16px; border-radius: var(--radius-sm);
@@ -335,7 +351,7 @@ iframe { width: 100%; height: 100%; border: none; }
 
 <main class="app-main">
     
-    <!-- Editor (Photo First UI) -->
+    <!-- Editor -->
     <div class="editor-panel">
         <div class="step-container">
             
@@ -477,6 +493,11 @@ iframe { width: 100%; height: 100%; border: none; }
         <div class="preview-toolbar">
             <button class="device-btn active" data-mode="pc">PC</button>
             <button class="device-btn" data-mode="mobile">Mobile</button>
+            <div style="width:1px; height:20px; background:rgba(255,255,255,0.2); margin:0 8px;"></div>
+            <button class="device-btn" id="btn-fullscreen" style="background:var(--ui-accent); color:#fff; border:none;">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24" style="margin-right:4px;"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+                全画面で見る
+            </button>
         </div>
         <div class="preview-canvas">
             <div class="preview-frame-wrapper mode-pc" id="preview-wrapper">
@@ -491,6 +512,14 @@ iframe { width: 100%; height: 100%; border: none; }
 <footer class="app-footer">
     テスト版（ベータ版） SP
 </footer>
+
+<!-- Fullscreen Overlay -->
+<div id="fullscreen-preview" class="fullscreen-overlay">
+    <iframe id="fullscreen-frame"></iframe>
+    <button id="btn-exit-fullscreen" class="btn-floating-close">
+        ✕ 閉じる
+    </button>
+</div>
 
 <!-- Modals -->
 <div class="modal-overlay" id="modal-settings">
@@ -539,8 +568,11 @@ iframe { width: 100%; height: 100%; border: none; }
                     <span style="font-size:0.85rem; color:var(--ui-text-muted);">枠をタップして、スマホに入っている写真を選んでください。「メイン写真」1枚と、「仕事の様子」などの写真3枚で完成します。</span>
                 </li>
                 <li>
-                    <strong>書き出し（保存）</strong><br>
-                    <span style="font-size:0.85rem; color:var(--ui-text-muted);">右上の「書き出し」ボタンを押すと、ホームページのデータ（HTMLファイル）がスマホに保存されます。これで完成です！</span>
+                    <strong>お客様に見せる・送る</strong><br>
+                    <span style="font-size:0.85rem; color:var(--ui-text-muted);">
+                        「全画面で見る」ボタンを押せば、その場で全画面表示できます。<br>
+                        「書き出し」ボタンを押すとファイルが保存されるので、それをメール等で送ることもできます。
+                    </span>
                 </li>
             </ol>
         </div>
@@ -755,7 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveState();
     }
 
-    function renderPreview() {
+    function generateHtmlContent() {
         const c = state.themeColor;
         const bgLight = adjustColorOpacity(c, 0.05);
 
@@ -780,7 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
         }).join('');
 
-        const html = `
+        return `
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -825,7 +857,10 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="footer">&copy; ${safe(state.company)}</div>
 </body>
 </html>`;
-        els.previewFrame.srcdoc = html;
+    }
+
+    function renderPreview() {
+        els.previewFrame.srcdoc = generateHtmlContent();
     }
 
     // --- Events ---
@@ -842,14 +877,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Advanced Text Change
-    const bindText = (el, key, isDeep) => {
-        el.addEventListener('input', (e) => {
-            if(isDeep) state.points[isDeep].t = el.value; // simplified for example logic
-            else state[key] = e.target.value;
-            // Actual deep bind logic below
-        });
-    };
-    
     els.textInputs.catch.addEventListener('input', (e)=>{ state.catch=e.target.value; renderPreview(); saveState(); });
     els.textInputs.tel.addEventListener('input', (e)=>{ state.contact.tel=e.target.value; renderPreview(); saveState(); });
     els.textInputs.hours.addEventListener('input', (e)=>{ state.contact.hours=e.target.value; renderPreview(); saveState(); });
@@ -874,44 +901,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const file = e.target.files[0];
         if(!file || !activeImgTarget) return;
         
-        // Use FileReader + Canvas to resize image (client-side compression)
         const reader = new FileReader();
         reader.onload = (ev) => {
             const img = new Image();
             img.onload = () => {
-                // Resize logic
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                
-                // Target dimensions (max 800px)
                 const MAX_WIDTH = 800;
                 const MAX_HEIGHT = 800;
                 let width = img.width;
                 let height = img.height;
 
                 if (width > height) {
-                    if (width > MAX_WIDTH) {
-                        height *= MAX_WIDTH / width;
-                        width = MAX_WIDTH;
-                    }
+                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
                 } else {
-                    if (height > MAX_HEIGHT) {
-                        width *= MAX_HEIGHT / height;
-                        height = MAX_HEIGHT;
-                    }
+                    if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
                 }
 
-                canvas.width = width;
-                canvas.height = height;
+                canvas.width = width; canvas.height = height;
                 ctx.drawImage(img, 0, 0, width, height);
-                
-                // To Data URL (JPEG low quality for storage safety)
                 const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                
                 state.images[activeImgTarget] = dataUrl;
                 updateUI();
-                saveState(); // Auto-save after setting image
-                showToast('写真をセットしました');
+                saveState();
+                showToast('写真を保存しました');
             };
             img.src = ev.target.result;
         };
@@ -921,7 +934,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.btn-photo-clear').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            e.stopPropagation(); // prevent card click
+            e.stopPropagation();
             const t = btn.dataset.target;
             state.images[t] = null;
             updateUI();
@@ -945,6 +958,20 @@ document.addEventListener('DOMContentLoaded', () => {
         b.addEventListener('click', (e) => e.target.closest('.modal-overlay').classList.remove('active'));
     });
 
+    // 5. Fullscreen Preview
+    const fsOverlay = document.getElementById('fullscreen-preview');
+    const fsFrame = document.getElementById('fullscreen-frame');
+    
+    document.getElementById('btn-fullscreen').addEventListener('click', () => {
+        // Load content into fullscreen iframe
+        fsFrame.srcdoc = generateHtmlContent();
+        fsOverlay.classList.add('active');
+    });
+    
+    document.getElementById('btn-exit-fullscreen').addEventListener('click', () => {
+        fsOverlay.classList.remove('active');
+    });
+
     // Demo Data
     document.getElementById('btn-demo-manufacturing').addEventListener('click', () => {
         state.industry = 'manufacturing';
@@ -952,15 +979,14 @@ document.addEventListener('DOMContentLoaded', () => {
         state.themeColor = '#020562';
         state.contact.tel = '03-1234-5678';
         state.contact.hours = '9:00〜18:00';
-        loadIndustryTemplate('manufacturing'); // resets text
-        // No images for demo to keep it light, or could allow text to show
+        loadIndustryTemplate('manufacturing');
         document.getElementById('modal-settings').classList.remove('active');
         showToast('デモデータを反映しました');
     });
 
     document.getElementById('btn-data-clear').addEventListener('click', () => {
         if(confirm('入力を全てクリアしますか？')) {
-            localStorage.removeItem('hp_maker_v2'); // Clear storage
+            localStorage.removeItem('hp_maker_v2');
             state = JSON.parse(JSON.stringify(defaultState));
             updateUI();
             document.getElementById('modal-settings').classList.remove('active');
@@ -980,8 +1006,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Preview Mobile/PC
     document.querySelectorAll('.device-btn').forEach(btn => {
+        if(btn.id === 'btn-fullscreen') return; // skip fs btn
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.device-btn').forEach(b => {
+                if(b.id !== 'btn-fullscreen') b.classList.remove('active');
+            });
             btn.classList.add('active');
             const wrapper = document.getElementById('preview-wrapper');
             wrapper.className = `preview-frame-wrapper mode-${btn.dataset.mode.toLowerCase()}`;
@@ -1005,7 +1034,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Export
     document.getElementById('btn-export-html').addEventListener('click', () => {
         if(!state.company) { alert('会社名を入力してください'); return; }
-        const content = els.previewFrame.srcdoc;
+        const content = generateHtmlContent(); // Use the generator
         const blob = new Blob([content], {type:'text/html'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -1029,7 +1058,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Init
-    // Try load state first, if empty, load default
     if(!loadState()) {
         loadIndustryTemplate('manufacturing');
     }
