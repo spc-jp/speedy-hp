@@ -24,7 +24,7 @@
     /* Light Theme (Default) */
     --ui-primary: #020562;
     --ui-accent: #22AEC9;
-    --ui-bg: #F1F5F9;
+    --ui-bg: #F8FAFC;
     --ui-surface: #FFFFFF;
     --ui-text: #334155;
     --ui-text-muted: #64748B;
@@ -100,7 +100,7 @@ body {
 }
 
 /* =========================================
-   Editor Panel (Left)
+   Editor Panel (Left) - NEW PHOTO FIRST UI
    ========================================= */
 .editor-panel {
     background: var(--ui-surface);
@@ -186,10 +186,11 @@ body {
     align-items: center; justify-content: center;
     color: var(--ui-text-muted);
     pointer-events: none;
+    text-align: center; padding: 10px;
 }
 .photo-placeholder svg { width: 32px; height: 32px; margin-bottom: 8px; opacity: 0.5; }
-.photo-label { font-size: 0.8rem; font-weight: 600; }
-.photo-sub { font-size: 0.7rem; opacity: 0.8; }
+.photo-label { font-size: 0.8rem; font-weight: 600; margin-bottom: 2px;}
+.photo-sub { font-size: 0.7rem; opacity: 0.8; line-height: 1.3; }
 
 .photo-preview {
     width: 100%; height: 100%; object-fit: cover;
@@ -278,7 +279,7 @@ iframe { width: 100%; height: 100%; border: none; }
 }
 .btn-floating-close:active { transform: translateX(-50%) scale(0.95); }
 
-/* Utility */
+/* Utility & Badges */
 .btn {
     padding: 8px 16px; border-radius: var(--radius-sm);
     font-weight: 600; font-size: 0.85rem; cursor: pointer;
@@ -286,8 +287,16 @@ iframe { width: 100%; height: 100%; border: none; }
 }
 .btn-primary { background: var(--ui-primary); color: #fff; }
 .btn-ghost { background: transparent; color: var(--ui-text); border-color: var(--ui-border); }
-.btn-icon { padding: 8px; border-radius: 50%; color: var(--ui-text); background: transparent; border: none; cursor: pointer; }
+.btn-icon { padding: 8px; border-radius: 50%; color: var(--ui-text); background: transparent; border: none; cursor: pointer; position: relative; }
 .btn-icon:hover { background: var(--ui-bg); }
+
+.badge-dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 8px; height: 8px; background: var(--ui-danger);
+    border-radius: 50%; border: 1px solid var(--ui-header-bg);
+    display: none;
+}
+.badge-dot.active { display: block; }
 
 /* Mobile */
 @media (max-width: 768px) {
@@ -310,12 +319,13 @@ iframe { width: 100%; height: 100%; border: none; }
     background: var(--ui-surface); width: 90%; max-width: 450px;
     border-radius: var(--radius-lg); padding: 0;
     box-shadow: var(--shadow-float); overflow: hidden;
+    max-height: 90vh; display: flex; flex-direction: column;
 }
 .modal-header {
     padding: 16px 20px; border-bottom: 1px solid var(--ui-border);
     font-weight: bold; display: flex; justify-content: space-between; align-items: center;
 }
-.modal-body { padding: 20px; }
+.modal-body { padding: 20px; overflow-y: auto; }
 .modal-footer {
     padding: 16px 20px; background: var(--ui-bg); border-top: 1px solid var(--ui-border);
     display: flex; justify-content: flex-end;
@@ -341,7 +351,10 @@ iframe { width: 100%; height: 100%; border: none; }
     </div>
     <div class="app-actions">
         <button class="btn btn-ghost" id="btn-guide">🔰 使い方</button>
-        <button class="btn btn-icon" id="btn-settings" title="設定">⚙️</button>
+        <button class="btn btn-icon" id="btn-settings" title="設定">
+            ⚙️
+            <div class="badge-dot" id="badge-settings"></div>
+        </button>
         <button class="btn btn-primary" id="btn-export-html">
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
             <span class="hide-on-mobile">書き出し</span>
@@ -363,26 +376,31 @@ iframe { width: 100%; height: 100%; border: none; }
                 </div>
                 <div class="compact-grid">
                     <div class="input-row">
-                        <label class="label-sm">業種（文章が自動で変わります）</label>
+                        <label class="label-sm">業種（文章・構成が自動で変わります）</label>
                         <select id="sel-industry" class="input-sm">
                             <option value="manufacturing">製造業</option>
                             <option value="wholesale">卸業</option>
                             <option value="insurance">保険代理店</option>
-                            <option value="renovation">リフォーム</option>
-                            <option value="pro">士業</option>
-                            <option value="consulting">コンサル</option>
+                            <option value="renovation">内装・リフォーム</option>
+                            <option value="pro">士業（税理士・行政書士）</option>
+                            <option value="consulting">コンサルタント</option>
                             <option value="clinic">整体・クリニック</option>
+                            <option value="restaurant">飲食店（カフェ・居酒屋）</option>
+                            <option value="salon">美容室・サロン</option>
                         </select>
                     </div>
-                    <div class="input-row">
-                        <label class="label-sm">会社名・屋号</label>
-                        <input type="text" id="inp-company" class="input-sm" placeholder="例：株式会社SPC精工">
-                    </div>
+                    
                     <div class="input-row">
                         <label class="label-sm">テーマカラー</label>
                         <div class="color-pills" id="color-pills">
                             <!-- JS will populate -->
                         </div>
+                    </div>
+                    
+                    <div style="margin-top:10px;">
+                        <button class="btn btn-ghost" onclick="document.getElementById('btn-settings').click()" style="width:100%; border-style:dashed; color:var(--ui-accent);">
+                            ✎ 会社名・SNSを設定する
+                        </button>
                     </div>
                 </div>
             </div>
@@ -404,7 +422,7 @@ iframe { width: 100%; height: 100%; border: none; }
                         <div class="photo-placeholder">
                             <svg fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
                             <span class="photo-label">メイン写真</span>
-                            <span class="photo-sub">サイトの顔（外観・集合写真など）</span>
+                            <span class="photo-sub" id="hint-hero">サイトの顔（外観・集合写真など）</span>
                         </div>
                         <button class="btn-photo-clear" data-target="hero">✕</button>
                     </div>
@@ -413,7 +431,7 @@ iframe { width: 100%; height: 100%; border: none; }
                     <div class="photo-card" id="card-p1" data-target="p1">
                         <img src="" class="photo-preview" id="img-p1">
                         <div class="photo-placeholder">
-                            <span class="photo-label">強み・特徴 ①</span>
+                            <span class="photo-label">画像 ①</span>
                             <span class="photo-sub" id="lbl-p1"></span>
                         </div>
                         <button class="btn-photo-clear" data-target="p1">✕</button>
@@ -423,7 +441,7 @@ iframe { width: 100%; height: 100%; border: none; }
                     <div class="photo-card" id="card-p2" data-target="p2">
                         <img src="" class="photo-preview" id="img-p2">
                         <div class="photo-placeholder">
-                            <span class="photo-label">強み・特徴 ②</span>
+                            <span class="photo-label">画像 ②</span>
                             <span class="photo-sub" id="lbl-p2"></span>
                         </div>
                         <button class="btn-photo-clear" data-target="p2">✕</button>
@@ -433,7 +451,7 @@ iframe { width: 100%; height: 100%; border: none; }
                     <div class="photo-card" id="card-p3" data-target="p3">
                         <img src="" class="photo-preview" id="img-p3">
                         <div class="photo-placeholder">
-                            <span class="photo-label">強み・特徴 ③</span>
+                            <span class="photo-label">画像 ③</span>
                             <span class="photo-sub" id="lbl-p3"></span>
                         </div>
                         <button class="btn-photo-clear" data-target="p3">✕</button>
@@ -529,13 +547,56 @@ iframe { width: 100%; height: 100%; border: none; }
             <button class="btn-icon modal-close">✕</button>
         </div>
         <div class="modal-body">
-            <div class="input-row">
-                <label class="label-sm">テーマ</label>
-                <div style="display:flex; gap:10px;">
-                    <button class="btn btn-ghost theme-toggle active" data-val="light" style="flex:1">☀️ Light</button>
-                    <button class="btn btn-ghost theme-toggle" data-val="dark" style="flex:1">🌙 Dark</button>
+            <!-- Company Info Section -->
+            <div style="margin-bottom:24px;">
+                <h4 style="margin:0 0 12px 0; color:var(--ui-accent);">🏢 会社情報</h4>
+                <div class="compact-grid">
+                    <div class="input-row">
+                        <label class="label-sm">会社名・屋号</label>
+                        <input type="text" id="inp-company" class="input-sm" placeholder="例：前田精工株式会社">
+                    </div>
+                    <div class="input-row">
+                        <label class="label-sm">住所</label>
+                        <input type="text" id="inp-address" class="input-sm" placeholder="例：大阪府東大阪市...">
+                    </div>
+                    <div class="input-row">
+                        <label class="label-sm">GoogleマップURL</label>
+                        <input type="text" id="inp-map" class="input-sm" placeholder="https://goo.gl/maps/...">
+                    </div>
                 </div>
             </div>
+
+            <!-- Contact Section -->
+            <div style="margin-bottom:24px;">
+                <h4 style="margin:0 0 12px 0; color:var(--ui-accent);">✉️ 連絡先・SNS</h4>
+                <div class="compact-grid">
+                    <div class="input-row">
+                        <label class="label-sm">メールアドレス</label>
+                        <input type="email" id="inp-email" class="input-sm" placeholder="info@example.com">
+                    </div>
+                    <div class="input-row">
+                        <label class="label-sm">LINE URL</label>
+                        <input type="text" id="inp-line" class="input-sm" placeholder="https://line.me/...">
+                    </div>
+                    <div class="input-row">
+                        <label class="label-sm">Instagram URL</label>
+                        <input type="text" id="inp-insta" class="input-sm" placeholder="https://instagram.com/...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- App Settings -->
+            <div style="margin-bottom:24px;">
+                <h4 style="margin:0 0 12px 0; color:var(--ui-accent);">🎨 アプリ設定</h4>
+                <div class="input-row">
+                    <label class="label-sm">画面テーマ</label>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn btn-ghost theme-toggle active" data-val="light" style="flex:1">☀️ Light</button>
+                        <button class="btn btn-ghost theme-toggle" data-val="dark" style="flex:1">🌙 Dark</button>
+                    </div>
+                </div>
+            </div>
+
             <hr style="border:none; border-top:1px dashed var(--ui-border); margin:20px 0;">
             <div style="display:flex; flex-direction:column; gap:10px;">
                 <button id="btn-demo-manufacturing" class="btn-ghost" style="justify-content:flex-start;">🏭 デモデータ（製造業）</button>
@@ -560,8 +621,8 @@ iframe { width: 100%; height: 100%; border: none; }
             </p>
             <ol style="padding-left:20px; display:flex; flex-direction:column; gap:16px;">
                 <li>
-                    <strong>業種と社名を入れる</strong><br>
-                    <span style="font-size:0.85rem; color:var(--ui-text-muted);">業種を選ぶと、プロが作成した文章が自動でセットされます。面倒な文字入力は必要ありません。</span>
+                    <strong>業種を選ぶ</strong><br>
+                    <span style="font-size:0.85rem; color:var(--ui-text-muted);">業種を選ぶと、プロが作成した文章が自動でセットされます。会社名などは右上の「⚙️設定」から入力できます。</span>
                 </li>
                 <li>
                     <strong>写真を4枚選ぶ</strong><br>
@@ -598,6 +659,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const templates = {
         manufacturing: {
+            hintHero: "工場の全景、または主力製品",
             catch: "日本のものづくりを、\n世界へ届ける技術力。",
             points: [
                 {t: "短納期対応", d: "24時間稼働体制で急なご依頼にも対応。"},
@@ -607,6 +669,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cta: "図面見積もりを依頼"
         },
         wholesale: {
+            hintHero: "倉庫の様子、またはトラック",
             catch: "物流の最適化で、\nビジネスを加速させる。",
             points: [
                 {t: "圧倒的な在庫力", d: "常時1万点以上を在庫し欠品を防ぎます。"},
@@ -616,6 +679,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cta: "在庫・掛率を確認する"
         },
         insurance: {
+            hintHero: "相談風景、またはオフィス",
             catch: "未来の安心を、\nあなたと一緒に設計します。",
             points: [
                 {t: "オーダーメイド提案", d: "ライフプランに合わせた最適保険を設計。"},
@@ -625,6 +689,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cta: "無料相談を予約する"
         },
         renovation: {
+            hintHero: "施工後の綺麗な部屋、外観",
             catch: "理想の住まいを、\n確かな技術で形にします。",
             points: [
                 {t: "完全自社施工", d: "中間マージンなしの適正価格で高品質。"},
@@ -634,6 +699,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cta: "無料見積もりを依頼する"
         },
         pro: { 
+            hintHero: "先生のポートレート、執務風景",
             catch: "法的課題を解決し、\n事業の成長を支援します。",
             points: [
                 {t: "迅速レスポンス", d: "ビジネスを止めない素早い対応。"},
@@ -643,6 +709,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cta: "初回相談（60分無料）"
         },
         consulting: {
+            hintHero: "会議風景、ホワイトボード",
             catch: "戦略と実行で、\n企業の壁を突破する。",
             points: [
                 {t: "実戦的戦略", d: "現場で使える具体的な戦略をご提案。"},
@@ -652,6 +719,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cta: "無料経営診断を受ける"
         },
         clinic: {
+            hintHero: "清潔な受付、または施術室",
             catch: "地域の皆様の\n健康と笑顔を守ります。",
             points: [
                 {t: "痛くない施術", d: "最新機器で身体に負担の少ない治療。"},
@@ -659,6 +727,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 {t: "土日も診療", d: "平日忙しい方でも通いやすい体制。"}
             ],
             cta: "WEB予約はこちら"
+        },
+        restaurant: {
+            hintHero: "美味しそうな料理、または賑わう店内",
+            catch: "旬の食材と空間で、\n至福のひとときを。",
+            points: [
+                {t: "こだわりの食材", d: "毎朝市場で仕入れる新鮮な魚介と野菜を使用。"},
+                {t: "くつろぎの空間", d: "個室完備。接待や記念日にもご利用いただけます。"},
+                {t: "厳選したお酒", d: "料理に合う日本酒・ワインを多数取り揃え。"}
+            ],
+            cta: "席を予約する"
+        },
+        salon: {
+            hintHero: "カット中の様子、おしゃれな店内",
+            catch: "あなた本来の美しさを、\n最大限に引き出します。",
+            points: [
+                {t: "似合わせカット", d: "骨格や髪質を見極め、毎朝扱いやすい髪へ。"},
+                {t: "髪質改善", d: "ダメージレスな薬剤で、芯から輝く髪へ導きます。"},
+                {t: "癒しのスパ", d: "フルフラットのシャンプー台で極上のリラックスを。"}
+            ],
+            cta: "WEB予約・クーポン"
         }
     };
 
@@ -672,7 +760,8 @@ document.addEventListener('DOMContentLoaded', () => {
             {t:'', d:''}, {t:'', d:''}, {t:'', d:''}
         ],
         contact: { tel: '', hours: '' },
-        images: { hero: null, p1: null, p2: null, p3: null }
+        images: { hero: null, p1: null, p2: null, p3: null },
+        details: { address: '', map: '', email: '', line: '', insta: '' }
     };
     let state = JSON.parse(JSON.stringify(defaultState));
     let activeImgTarget = null; // 'hero', 'p1', ...
@@ -692,6 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const parsed = JSON.parse(saved);
                 state = { ...defaultState, ...parsed }; // Merge
+                if(!state.details) state.details = defaultState.details; // Compat
                 updateUI();
                 showToast('前回のデータを復元しました');
                 return true;
@@ -732,7 +822,16 @@ document.addEventListener('DOMContentLoaded', () => {
             p2t: document.getElementById('inp-p2-t'), p2d: document.getElementById('inp-p2-d'),
             p3t: document.getElementById('inp-p3-t'), p3d: document.getElementById('inp-p3-d'),
         },
-        previewFrame: document.getElementById('preview-frame')
+        // Details Inputs
+        detailInputs: {
+            address: document.getElementById('inp-address'),
+            map: document.getElementById('inp-map'),
+            email: document.getElementById('inp-email'),
+            line: document.getElementById('inp-line'),
+            insta: document.getElementById('inp-insta')
+        },
+        previewFrame: document.getElementById('preview-frame'),
+        badgeSettings: document.getElementById('badge-settings')
     };
 
     // --- Functions ---
@@ -750,6 +849,13 @@ document.addEventListener('DOMContentLoaded', () => {
         els.textInputs.p1t.value = state.points[0].t; els.textInputs.p1d.value = state.points[0].d;
         els.textInputs.p2t.value = state.points[1].t; els.textInputs.p2d.value = state.points[1].d;
         els.textInputs.p3t.value = state.points[2].t; els.textInputs.p3d.value = state.points[2].d;
+
+        // Sync Details
+        els.detailInputs.address.value = state.details.address;
+        els.detailInputs.map.value = state.details.map;
+        els.detailInputs.email.value = state.details.email;
+        els.detailInputs.line.value = state.details.line;
+        els.detailInputs.insta.value = state.details.insta;
 
         // Sync Color Pills
         document.querySelectorAll('.color-pill').forEach(p => {
@@ -769,10 +875,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Update Labels in Photo Cards (from Text)
+        // Update Labels & Hints in Photo Cards
         document.getElementById('lbl-p1').textContent = state.points[0].t || '詳細未設定';
         document.getElementById('lbl-p2').textContent = state.points[1].t || '詳細未設定';
         document.getElementById('lbl-p3').textContent = state.points[2].t || '詳細未設定';
+        
+        const currentTmpl = templates[state.industry];
+        if(currentTmpl && currentTmpl.hintHero) {
+            document.getElementById('hint-hero').textContent = currentTmpl.hintHero;
+        }
+
+        // Badge Check (Simple Validation)
+        if(!state.company) {
+            els.badgeSettings.classList.add('active');
+        } else {
+            els.badgeSettings.classList.remove('active');
+        }
 
         renderPreview();
     }
@@ -800,17 +918,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const pointsHtml = state.points.map((p, i) => {
             const imgKey = `p${i+1}`;
             const imgHtml = state.images[imgKey] 
-                ? `<div style="height:180px; background:url(${state.images[imgKey]}) center/cover;"></div>` 
-                : `<div style="height:180px; background:${bgLight}; display:flex; align-items:center; justify-content:center; color:#999;">NO IMAGE</div>`;
+                ? `<div style="height:200px; background:url(${state.images[imgKey]}) center/cover;"></div>` 
+                : `<div style="height:200px; background:${bgLight}; display:flex; align-items:center; justify-content:center; color:#999;">NO IMAGE</div>`;
             return `
-            <div class="card">
+            <div class="card scroll-anim">
                 ${imgHtml}
-                <div style="padding:20px;">
-                    <h3>${safe(p.t)}</h3>
-                    <p>${safe(p.d)}</p>
+                <div style="padding:24px;">
+                    <h3 style="font-size:1.2rem; margin-bottom:10px;">${safe(p.t)}</h3>
+                    <p style="font-size:0.95rem; opacity:0.8;">${safe(p.d)}</p>
                 </div>
             </div>`;
         }).join('');
+
+        // Details Links
+        const d = state.details;
+        let snsLinks = '';
+        if(d.insta) snsLinks += `<a href="${safe(d.insta)}" target="_blank" style="display:inline-block;margin:5px;padding:10px 16px;background:#E1306C;color:white;border-radius:50px;font-size:0.9rem;text-decoration:none;font-weight:bold;">Instagram</a>`;
+        if(d.line) snsLinks += `<a href="${safe(d.line)}" target="_blank" style="display:inline-block;margin:5px;padding:10px 16px;background:#06C755;color:white;border-radius:50px;font-size:0.9rem;text-decoration:none;font-weight:bold;">LINE公式</a>`;
+        
+        let mapLink = '';
+        if(d.map && d.address) mapLink = `<a href="${safe(d.map)}" target="_blank" style="text-decoration:underline;color:var(--p); margin-left:8px;">[地図を見る]</a>`;
 
         return `
 <!DOCTYPE html>
@@ -818,43 +945,89 @@ document.addEventListener('DOMContentLoaded', () => {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${safe(state.company)}</title>
 <style>
     :root { --p: ${c}; --bg: ${bgLight}; }
-    body{margin:0;font-family:sans-serif;color:#333;line-height:1.6;}
-    a{text-decoration:none;}
-    header{padding:15px 5%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,0.05);position:sticky;top:0;background:#fff;z-index:100;}
-    .logo{font-weight:bold;font-size:1.2rem;color:var(--p);}
-    .tel{background:var(--p);color:#fff;padding:8px 16px;border-radius:4px;font-weight:bold;font-size:0.9rem;}
-    .hero{height:400px;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;background-size:cover;background-position:center;padding:20px; ${heroStyle}}
-    .hero h1{font-size:2rem;text-shadow:0 2px 5px rgba(0,0,0,0.5);white-space:pre-wrap;}
-    section{padding:50px 5%;}
-    h2{text-align:center;color:var(--p);font-size:1.8rem;margin-bottom:40px;border-bottom:3px solid var(--p);display:inline-block;padding-bottom:5px;}
+    body{margin:0;font-family:"Helvetica Neue",Arial,sans-serif;color:#333;line-height:1.8;background:#f9f9f9;}
+    a{text-decoration:none;transition:opacity 0.3s;} a:hover{opacity:0.8;}
+    
+    /* Header */
+    header{padding:15px 5%;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 15px rgba(0,0,0,0.05);position:sticky;top:0;background:rgba(255,255,255,0.95);backdrop-filter:blur(5px);z-index:100;}
+    .logo{font-weight:bold;font-size:1.1rem;color:var(--p);}
+    .tel{background:var(--p);color:#fff;padding:8px 16px;border-radius:50px;font-weight:bold;font-size:0.85rem;}
+    
+    /* Hero */
+    .hero{height:80vh;min-height:400px;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;background-size:cover;background-position:center;padding:20px; ${heroStyle} animation: fadeIn 1.5s ease;}
+    .hero h1{font-size:clamp(1.5rem, 5vw, 2.8rem);text-shadow:0 4px 10px rgba(0,0,0,0.6);white-space:pre-wrap;line-height:1.4; letter-spacing:0.05em;}
+    
+    /* Section */
+    section{padding:80px 5%;}
+    h2{text-align:center;color:var(--p);font-size:1.8rem;margin-bottom:60px;position:relative;display:inline-block;}
+    h2::after{content:'';display:block;width:60px;height:3px;background:var(--p);margin:15px auto 0;}
     .center-h2{text-align:center;}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:30px;max-width:1000px;margin:0 auto;}
-    .card{background:#fff;border:1px solid #eee;border-radius:8px;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,0.05);}
-    .card h3{color:var(--p);margin:0 0 10px 0;}
-    .footer{background:#333;color:#fff;text-align:center;padding:30px;font-size:0.8rem;}
-    @media(max-width:600px){ .hero{height:300px;} .hero h1{font-size:1.4rem;} }
+    
+    /* Cards */
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:40px;max-width:1100px;margin:0 auto;}
+    .card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.05);transition:transform 0.3s ease;}
+    .card:hover{transform:translateY(-5px);}
+    .card h3{color:var(--p);margin:0;}
+    
+    /* Footer & Contact */
+    .contact-area{background:var(--bg); text-align:center; padding: 100px 20px;}
+    .footer{background:#1e293b;color:#fff;text-align:center;padding:50px 20px;font-size:0.9rem;}
+    
+    /* Animations */
+    @keyframes fadeIn { from{opacity:0;transform:scale(1.05);} to{opacity:1;transform:scale(1);} }
+    .scroll-anim { opacity: 0; transform: translateY(30px); transition: all 0.8s ease; }
+    .scroll-anim.visible { opacity: 1; transform: translateY(0); }
+    
+    @media(max-width:600px){ .hero{height:500px;} section{padding:60px 5%;} }
 </style>
+<script>
+    // Simple Scroll Animation Script
+    document.addEventListener('DOMContentLoaded', () => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting){
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.scroll-anim').forEach(el => observer.observe(el));
+    });
+<\/script>
 </head>
 <body>
     <header>
         <div class="logo">${safe(state.company)||'COMPANY'}</div>
         ${state.contact.tel ? `<a href="tel:${state.contact.tel}" class="tel">📞 ${state.contact.tel}</a>` : ''}
     </header>
+    
     <div class="hero">
         <h1>${safe(state.catch) || 'キャッチコピー'}</h1>
     </div>
+    
     <section>
-        <div class="center-h2"><h2>選ばれる理由</h2></div>
+        <div class="center-h2"><h2 class="scroll-anim">選ばれる理由</h2></div>
         <div class="grid">${pointsHtml}</div>
     </section>
-    <section style="background:var(--bg);text-align:center;">
-        <div class="center-h2"><h2>お問い合わせ</h2></div>
-        <p>お気軽にご相談ください。<br>${safe(state.contact.hours)}</p>
-        ${state.contact.tel ? `<div style="font-size:1.5rem;font-weight:bold;color:var(--p);margin-top:10px;">${state.contact.tel}</div>` : ''}
+    
+    <section class="contact-area">
+        <div class="center-h2"><h2 class="scroll-anim">お問い合わせ</h2></div>
+        <p class="scroll-anim" style="margin-bottom:30px;">お気軽にご相談ください。<br>${safe(state.contact.hours)}</p>
+        
+        ${state.contact.tel ? `<div class="scroll-anim" style="font-size:2rem;font-weight:bold;color:var(--p);margin-bottom:20px;">${state.contact.tel}</div>` : ''}
+        
+        ${d.email ? `<p class="scroll-anim">Email: <a href="mailto:${safe(d.email)}" style="color:var(--p);">${safe(d.email)}</a></p>` : ''}
+        
+        <div class="scroll-anim" style="margin-top:40px;">${snsLinks}</div>
     </section>
-    <div class="footer">&copy; ${safe(state.company)}</div>
+
+    <div class="footer">
+        <p style="font-weight:bold; font-size:1.2rem; margin-bottom:15px;">${safe(state.company)}</p>
+        ${d.address ? `<p>${safe(d.address)} ${mapLink}</p>` : ''}
+        <p style="opacity:0.6; margin-top:40px; font-size:0.75rem;">&copy; ${safe(state.company)}</p>
+    </div>
 </body>
 </html>`;
     }
@@ -874,6 +1047,15 @@ document.addEventListener('DOMContentLoaded', () => {
         state.company = e.target.value; 
         updateUI(); 
         saveState();
+    });
+    
+    // Details Inputs
+    Object.keys(els.detailInputs).forEach(key => {
+        els.detailInputs[key].addEventListener('input', (e) => {
+            state.details[key] = e.target.value;
+            renderPreview();
+            saveState();
+        });
     });
     
     // Advanced Text Change
@@ -975,10 +1157,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Demo Data
     document.getElementById('btn-demo-manufacturing').addEventListener('click', () => {
         state.industry = 'manufacturing';
-        state.company = 'Maeda精工株式会社';
+        state.company = '前田精工株式会社';
         state.themeColor = '#020562';
         state.contact.tel = '03-1234-5678';
         state.contact.hours = '9:00〜18:00';
+        // Add Demo Details
+        state.details.address = '大阪府東大阪市本庄西1-2-3';
+        state.details.email = 'info@maeda-seiko.demo';
+        state.details.map = 'https://goo.gl/maps/dummy';
+        state.details.line = 'https://line.me/R/ti/p/dummy';
+        state.details.insta = 'https://instagram.com/dummy';
+        
         loadIndustryTemplate('manufacturing');
         document.getElementById('modal-settings').classList.remove('active');
         showToast('デモデータを反映しました');
