@@ -645,6 +645,31 @@ document.addEventListener('DOMContentLoaded', () => {
     let state = JSON.parse(JSON.stringify(defaultState));
     let activeImgTarget = null; // 'hero', 'p1', ...
 
+    // --- Persistence (LocalStorage) ---
+    function saveState() {
+        try {
+            localStorage.setItem('hp_maker_v2', JSON.stringify(state));
+        } catch(e) {
+            console.error('Save failed (likely quota)', e);
+        }
+    }
+
+    function loadState() {
+        const saved = localStorage.getItem('hp_maker_v2');
+        if(saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                state = { ...defaultState, ...parsed }; // Merge
+                updateUI();
+                showToast('前回のデータを復元しました');
+                return true;
+            } catch(e) {
+                console.error('Load failed', e);
+            }
+        }
+        return false;
+    }
+
     // --- Init UI ---
     
     // Render Color Pills
@@ -657,6 +682,7 @@ document.addEventListener('DOMContentLoaded', () => {
         d.onclick = () => {
             state.themeColor = c.hex;
             updateUI();
+            saveState();
         };
         pillContainer.appendChild(d);
     });
@@ -726,6 +752,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.points = JSON.parse(JSON.stringify(t.points));
         // Contact info defaults? maybe empty is better
         updateUI();
+        saveState();
     }
 
     function renderPreview() {
@@ -808,17 +835,29 @@ document.addEventListener('DOMContentLoaded', () => {
         state.industry = e.target.value;
         loadIndustryTemplate(state.industry);
     });
-    els.inpCompany.addEventListener('input', (e) => { state.company = e.target.value; updateUI(); });
+    els.inpCompany.addEventListener('input', (e) => { 
+        state.company = e.target.value; 
+        updateUI(); 
+        saveState();
+    });
     
     // Advanced Text Change
-    els.textInputs.catch.addEventListener('input', (e)=>{ state.catch=e.target.value; renderPreview(); });
-    els.textInputs.tel.addEventListener('input', (e)=>{ state.contact.tel=e.target.value; renderPreview(); });
-    els.textInputs.hours.addEventListener('input', (e)=>{ state.contact.hours=e.target.value; renderPreview(); });
+    const bindText = (el, key, isDeep) => {
+        el.addEventListener('input', (e) => {
+            if(isDeep) state.points[isDeep].t = el.value; // simplified for example logic
+            else state[key] = e.target.value;
+            // Actual deep bind logic below
+        });
+    };
+    
+    els.textInputs.catch.addEventListener('input', (e)=>{ state.catch=e.target.value; renderPreview(); saveState(); });
+    els.textInputs.tel.addEventListener('input', (e)=>{ state.contact.tel=e.target.value; renderPreview(); saveState(); });
+    els.textInputs.hours.addEventListener('input', (e)=>{ state.contact.hours=e.target.value; renderPreview(); saveState(); });
     
     // Point Text Change
     ['p1','p2','p3'].forEach((k, i) => {
-        els.textInputs[`${k}t`].addEventListener('input', (e)=>{ state.points[i].t=e.target.value; updateUI(); });
-        els.textInputs[`${k}d`].addEventListener('input', (e)=>{ state.points[i].d=e.target.value; updateUI(); });
+        els.textInputs[`${k}t`].addEventListener('input', (e)=>{ state.points[i].t=e.target.value; updateUI(); saveState(); });
+        els.textInputs[`${k}d`].addEventListener('input', (e)=>{ state.points[i].d=e.target.value; updateUI(); saveState(); });
     });
 
     // 2. Photo Deck Interaction
@@ -830,14 +869,51 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- Image Handling with Resize ---
     els.fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if(!file || !activeImgTarget) return;
+        
+        // Use FileReader + Canvas to resize image (client-side compression)
         const reader = new FileReader();
         reader.onload = (ev) => {
-            state.images[activeImgTarget] = ev.target.result;
-            updateUI();
-            showToast('写真をセットしました');
+            const img = new Image();
+            img.onload = () => {
+                // Resize logic
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Target dimensions (max 800px)
+                const MAX_WIDTH = 800;
+                const MAX_HEIGHT = 800;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // To Data URL (JPEG low quality for storage safety)
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                
+                state.images[activeImgTarget] = dataUrl;
+                updateUI();
+                saveState(); // Auto-save after setting image
+                showToast('写真をセットしました');
+            };
+            img.src = ev.target.result;
         };
         reader.readAsDataURL(file);
         e.target.value = ''; // Reset
@@ -849,6 +925,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const t = btn.dataset.target;
             state.images[t] = null;
             updateUI();
+            saveState();
         });
     });
 
@@ -883,6 +960,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btn-data-clear').addEventListener('click', () => {
         if(confirm('入力を全てクリアしますか？')) {
+            localStorage.removeItem('hp_maker_v2'); // Clear storage
             state = JSON.parse(JSON.stringify(defaultState));
             updateUI();
             document.getElementById('modal-settings').classList.remove('active');
@@ -951,7 +1029,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Init
-    loadIndustryTemplate('manufacturing');
+    // Try load state first, if empty, load default
+    if(!loadState()) {
+        loadIndustryTemplate('manufacturing');
+    }
 
 });
 </script>
