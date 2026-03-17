@@ -225,7 +225,7 @@ select.input-sm { cursor: pointer; }
 }
 .photo-card.has-image:hover .btn-photo-clear { display: flex; }
 
-/* Finish Button */
+/* Finish Button (PC only) */
 .btn-finish {
     background: linear-gradient(135deg, var(--ui-primary), var(--ui-accent));
     color: #fff; border: none;
@@ -237,15 +237,56 @@ select.input-sm { cursor: pointer; }
 }
 .btn-finish:hover { opacity: 0.9; transform: translateY(-1px); }
 
-/* Mobile Save Button */
-.btn-save-mobile {
-    background: var(--ui-success); color: #fff; border: none;
-    padding: 14px; border-radius: 10px;
-    font-weight: bold; font-size: 0.95rem; cursor: pointer;
-    width: 100%; transition: 0.2s; display: none;
+/* =========================================
+   Mobile Fixed Bottom Bar
+   ========================================= */
+.mobile-action-bar {
+    display: none;
 }
+
 @media (max-width: 768px) {
-    .btn-save-mobile { display: block; }
+    /* ボタンをstep-container内から隠す */
+    .btn-finish { display: none; }
+
+    /* 固定バー本体 */
+    .mobile-action-bar {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        z-index: 200;
+        background: var(--ui-surface);
+        border-top: 1px solid var(--ui-border);
+        padding: 10px 12px;
+        gap: 10px;
+        box-shadow: 0 -4px 16px rgba(0,0,0,0.12);
+        /* プレビュー画面では非表示 */
+        transition: transform 0.3s;
+    }
+
+    .app-main.view-preview ~ .mobile-action-bar {
+        transform: translateY(100%);
+        pointer-events: none;
+    }
+
+    .mobile-action-bar .btn-bar-preview {
+        flex: 2;
+        background: linear-gradient(135deg, var(--ui-primary), var(--ui-accent));
+        color: #fff; border: none;
+        padding: 14px 10px; border-radius: 10px;
+        font-weight: bold; font-size: 0.9rem; cursor: pointer;
+        letter-spacing: 0.03em;
+    }
+
+    .mobile-action-bar .btn-bar-save {
+        flex: 1;
+        background: var(--ui-success);
+        color: #fff; border: none;
+        padding: 14px 10px; border-radius: 10px;
+        font-weight: bold; font-size: 0.9rem; cursor: pointer;
+    }
+
+    /* コンテンツがバーに隠れないようにパディング確保 */
+    .step-container { padding-bottom: 90px; }
 }
 
 /* =========================================
@@ -401,9 +442,8 @@ iframe { width: 100%; height: 100%; border: none; }
                 </div>
             </div>
 
-            <!-- Action Buttons -->
+            <!-- Action Button (PC only / mobile uses fixed bar) -->
             <button class="btn-finish" id="btn-finish-jump">📱 完成デモを確認する →</button>
-            <button class="btn-save-mobile" id="save-mobile">💾 HTMLを保存する</button>
 
         </div>
     </section>
@@ -425,6 +465,12 @@ iframe { width: 100%; height: 100%; border: none; }
     </section>
 
 </main>
+
+<!-- Mobile Fixed Bottom Action Bar -->
+<div class="mobile-action-bar" id="mobile-action-bar">
+    <button class="btn-bar-preview" id="btn-bar-preview">📱 完成デモを確認する</button>
+    <button class="btn-bar-save" id="btn-bar-save">💾 保存</button>
+</div>
 
 <!-- Settings Modal -->
 <div class="modal-overlay" id="modal-settings">
@@ -637,6 +683,7 @@ ${contactHtml}
         });
 
         getEl('preview-iframe').srcdoc = buildHTML();
+        updateMobileBar();
     }
 
     // --- Toast & Download ---
@@ -660,8 +707,17 @@ ${contactHtml}
 
     // --- Events: Save ---
     getEl('save-top').onclick = download;
-    getEl('save-mobile').onclick = download;
     getEl('save-presentation').onclick = download;
+
+    // --- Mobile Bar Events ---
+    getEl('btn-bar-preview').onclick = () => { state.view = 'preview'; syncUI(); };
+    getEl('btn-bar-save').onclick = download;
+
+    // 固定バーの表示制御（プレビュー時は非表示）
+    const mobileBar = getEl('mobile-action-bar');
+    function updateMobileBar() {
+        mobileBar.style.transform = state.view === 'preview' ? 'translateY(110%)' : 'translateY(0)';
+    }
 
     // --- Events: Modal ---
     getEl('open-settings').onclick = () => getEl('modal-settings').classList.add('active');
