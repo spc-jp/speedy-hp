@@ -60,7 +60,7 @@ body {
     flex-shrink: 0;
 }
 
-.app-logo { font-weight: 800; font-size: 0.9rem; color: #fff; letter-spacing: 0.03em; }
+.app-logo { font-weight: 800; font-size: 0.9rem; color: #fff; letter-spacing: 0.03em; cursor: pointer; user-select: none; background: none; border: none; padding: 0; font-family: inherit; }
 
 .view-switcher {
     display: flex; background: rgba(255,255,255,0.15);
@@ -362,7 +362,7 @@ iframe { width: 100%; height: 100%; border: none; }
 <body>
 
 <header class="app-header">
-    <div class="app-logo">📱 スマホWeb工房</div>
+    <button class="app-logo" id="btn-logo">📱 スマホWeb工房</button>
     <div class="view-switcher">
         <button class="switch-btn active" id="mode-editor">🛠️ 制作</button>
         <button class="switch-btn" id="mode-preview">📱 完成</button>
@@ -702,6 +702,7 @@ ${contactHtml}
 
     // --- Events: View Switch ---
     getEl('mode-editor').onclick = () => { state.view = 'editor'; syncUI(); };
+    getEl('btn-logo').onclick = () => { state.view = 'editor'; syncUI(); };
     getEl('mode-preview').onclick = () => { state.view = 'preview'; syncUI(); };
     getEl('btn-finish-jump').onclick = () => { state.view = 'preview'; syncUI(); };
 
