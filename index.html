@@ -9,17 +9,18 @@
    UI Variables & Base
    ========================================= */
 :root {
-    --header-h: 60px;
+    --header-h: 58px;
     --radius-md: 12px;
     --ui-primary: #020562;
     --ui-accent: #22AEC9;
-    --ui-bg: #F8FAFC;
+    --ui-bg: #F0F4F8;
     --ui-surface: #FFFFFF;
-    --ui-text: #334155;
+    --ui-text: #1E293B;
     --ui-text-muted: #64748B;
     --ui-border: #E2E8F0;
     --ui-success: #10B981;
     --ui-danger: #EF4444;
+    --ui-step-bg: #F8FAFC;
 }
 
 [data-theme="dark"] {
@@ -30,12 +31,13 @@
     --ui-text: #f1f5f9;
     --ui-text-muted: #94a3b8;
     --ui-border: #334155;
+    --ui-step-bg: #162032;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body {
     margin: 0; padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", -apple-system, BlinkMacSystemFont, sans-serif;
     background-color: var(--ui-bg);
     color: var(--ui-text);
     height: 100vh;
@@ -45,39 +47,58 @@ body {
 }
 
 /* =========================================
-   Header & Switcher
+   Header
    ========================================= */
 .app-header {
     height: var(--header-h);
-    background: var(--ui-surface);
-    border-bottom: 1px solid var(--ui-border);
+    background: var(--ui-primary);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 12px;
+    padding: 0 14px;
     z-index: 100;
     flex-shrink: 0;
 }
 
-.app-logo { font-weight: 800; font-size: 0.9rem; color: var(--ui-primary); }
+.app-logo { font-weight: 800; font-size: 0.9rem; color: #fff; letter-spacing: 0.03em; }
 
 .view-switcher {
-    display: flex; background: #eee;
+    display: flex; background: rgba(255,255,255,0.15);
     padding: 3px; border-radius: 25px;
 }
 .switch-btn {
-    padding: 8px 16px; border-radius: 20px; border: none;
-    background: transparent; color: #666;
-    font-weight: bold; font-size: 0.85rem; cursor: pointer;
+    padding: 7px 16px; border-radius: 20px; border: none;
+    background: transparent; color: rgba(255,255,255,0.7);
+    font-weight: bold; font-size: 0.82rem; cursor: pointer;
     transition: 0.2s;
 }
 .switch-btn.active {
-    background: var(--ui-surface); color: var(--ui-primary);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: #fff; color: var(--ui-primary);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
+.app-actions { display: flex; align-items: center; gap: 8px; }
+.btn-icon-header {
+    background: rgba(255,255,255,0.15);
+    border: none; color: #fff;
+    width: 34px; height: 34px;
+    border-radius: 50%; font-size: 1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: 0.2s;
+}
+.btn-icon-header:hover { background: rgba(255,255,255,0.3); }
+
+.btn-save-header {
+    background: var(--ui-success);
+    color: white; border: none;
+    padding: 8px 16px; border-radius: 20px;
+    font-weight: bold; font-size: 0.8rem; cursor: pointer;
+    transition: 0.2s;
+}
+.btn-save-header:hover { opacity: 0.85; }
+
 /* =========================================
-   Main Panels (Fixed Layout)
+   Main Panels
    ========================================= */
 .app-main {
     flex: 1;
@@ -93,76 +114,208 @@ body {
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* PC: Side-by-side by default */
 @media (min-width: 769px) {
-    .editor-panel { width: 420px; border-right: 1px solid var(--ui-border); }
+    .editor-panel { width: 400px; border-right: 1px solid var(--ui-border); }
     .preview-panel { flex: 1; }
-    
-    /* Presentation mode on PC */
     .app-main.view-preview .editor-panel { display: none; }
+    .app-logo { display: block !important; }
 }
 
-/* Mobile: Overlay each other */
 @media (max-width: 768px) {
     .app-logo { display: none; }
     .editor-panel, .preview-panel { position: absolute; inset: 0; }
-    
     .app-main.view-editor .preview-panel { visibility: hidden; transform: translateX(100%); }
     .app-main.view-preview .editor-panel { visibility: hidden; transform: translateX(-100%); }
+    .hide-mobile { display: none !important; }
 }
 
-/* mode adjustments for "Presentation" */
 .app-main.view-preview .preview-toolbar { display: none; }
 .app-main.view-preview .preview-canvas { padding: 0; }
 .app-main.view-preview .preview-frame-wrapper { width: 100% !important; height: 100% !important; border:none; border-radius:0; box-shadow: none; }
 
-/* Components */
-.editor-panel { background: var(--ui-surface); overflow-y: auto; display: flex; flex-direction: column; }
+/* =========================================
+   Editor Panel
+   ========================================= */
+.editor-panel { background: var(--ui-bg); overflow-y: auto; display: flex; flex-direction: column; }
+
+.step-container { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+
+.step-card {
+    background: var(--ui-surface);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--ui-border);
+    overflow: hidden;
+}
+
+.step-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--ui-border);
+    background: var(--ui-step-bg);
+}
+
+.step-num {
+    background: var(--ui-primary); color: #fff;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; font-weight: bold; flex-shrink: 0;
+}
+
+.step-label { font-weight: bold; font-size: 0.88rem; color: var(--ui-text); }
+
+.step-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+
+.field-label {
+    font-size: 0.75rem; font-weight: bold;
+    color: var(--ui-text-muted); margin-bottom: 3px;
+}
+
+.input-sm {
+    width: 100%; padding: 10px 12px;
+    border: 1.5px solid var(--ui-border);
+    border-radius: 8px;
+    background: var(--ui-bg);
+    font-size: 0.92rem; color: var(--ui-text);
+    transition: border-color 0.2s;
+    outline: none;
+}
+.input-sm:focus { border-color: var(--ui-accent); }
+
+select.input-sm { cursor: pointer; }
+
+/* Color Pills */
+.color-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.color-pill {
+    width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+    border: 3px solid transparent;
+    transition: transform 0.15s, border-color 0.15s;
+    position: relative;
+}
+.color-pill:hover { transform: scale(1.12); }
+.color-pill.active {
+    border-color: var(--ui-text);
+    transform: scale(1.15);
+    box-shadow: 0 0 0 2px var(--ui-surface), 0 0 0 4px var(--ui-text);
+}
+.color-pill-label {
+    font-size: 0.65rem; color: var(--ui-text-muted);
+    text-align: center; margin-top: 2px;
+}
+
+/* Photo Deck */
+.photo-deck { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.photo-card {
+    background: var(--ui-bg); border: 2px dashed #cbd5e1;
+    border-radius: 10px; position: relative; cursor: pointer;
+    aspect-ratio: 4/3; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; overflow: hidden;
+    transition: border-color 0.2s, transform 0.15s;
+}
+.photo-card:hover { border-color: var(--ui-accent); transform: scale(1.01); }
+.photo-card.hero { grid-column: 1 / -1; aspect-ratio: 16/9; border-color: var(--ui-accent); }
+.photo-card.has-image { border-style: solid; border-color: var(--ui-success); }
+.photo-preview { width: 100%; height: 100%; object-fit: cover; }
+.photo-placeholder { font-size: 0.72rem; color: var(--ui-text-muted); font-weight: bold; text-align: center; line-height: 1.6; }
+.photo-placeholder span { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+.btn-photo-clear {
+    position: absolute; top: 5px; right: 5px; width: 22px; height: 22px;
+    border-radius: 50%; background: rgba(0,0,0,0.55); color: #fff;
+    border: none; font-size: 11px; cursor: pointer; display: none;
+    align-items: center; justify-content: center;
+}
+.photo-card.has-image:hover .btn-photo-clear { display: flex; }
+
+/* Finish Button */
+.btn-finish {
+    background: linear-gradient(135deg, var(--ui-primary), var(--ui-accent));
+    color: #fff; border: none;
+    padding: 16px; border-radius: 12px;
+    font-weight: bold; font-size: 1rem; cursor: pointer;
+    width: 100%; letter-spacing: 0.05em;
+    box-shadow: 0 4px 15px rgba(2,5,98,0.3);
+    transition: 0.2s; margin-top: 4px;
+}
+.btn-finish:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* Mobile Save Button */
+.btn-save-mobile {
+    background: var(--ui-success); color: #fff; border: none;
+    padding: 14px; border-radius: 10px;
+    font-weight: bold; font-size: 0.95rem; cursor: pointer;
+    width: 100%; transition: 0.2s; display: none;
+}
+@media (max-width: 768px) {
+    .btn-save-mobile { display: block; }
+}
+
+/* =========================================
+   Preview Panel
+   ========================================= */
 .preview-panel { background: #1e293b; display: flex; flex-direction: column; }
 
-.step-container { padding: 20px; display: flex; flex-direction: column; gap: 24px; }
-.step-title { font-weight: bold; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-.step-num { background: var(--ui-accent); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+.preview-toolbar {
+    height: 48px; background: rgba(0,0,0,0.25);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.device-btn {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.7); padding: 6px 14px; border-radius: 20px;
+    font-size: 0.75rem; cursor: pointer; transition: 0.2s;
+}
+.device-btn:hover { background: rgba(255,255,255,0.2); }
+.device-btn.active { background: var(--ui-accent); border-color: var(--ui-accent); color: #fff; }
 
-.input-sm { width: 100%; padding: 10px; border: 1px solid var(--ui-border); border-radius: 8px; background: #f9f9f9; font-size: 0.95rem; margin-top: 4px; color: #333; }
-.color-pills { display: flex; gap: 10px; margin-top: 8px; }
-.color-pill { width: 34px; height: 34px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; position: relative; }
-.color-pill.active { border-color: var(--ui-text); transform: scale(1.1); }
-.color-pill::after { content:''; position:absolute; inset:2px; border-radius:50%; background: var(--bg); }
-
-.photo-deck { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.photo-card { background: #f0f4f8; border: 2px dashed #cbd5e1; border-radius: var(--radius-md); position: relative; cursor: pointer; aspect-ratio: 4/3; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
-.photo-card.hero { grid-column: 1 / -1; aspect-ratio: 16/9; border-color: var(--ui-accent); }
-.photo-card.has-image { border-style: solid; border-color: transparent; }
-.photo-preview { width: 100%; height: 100%; object-fit: cover; }
-.photo-placeholder { font-size: 0.75rem; color: #64748b; font-weight: bold; text-align: center; }
-.btn-photo-clear { position: absolute; top: 5px; right: 5px; width: 20px; height: 20px; border-radius: 50%; background: rgba(0,0,0,0.5); color: #fff; border: none; font-size: 10px; cursor: pointer; display: none; }
-.photo-card.has-image:hover .btn-photo-clear { display: block; }
-
-.preview-toolbar { height: 50px; background: rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; gap: 10px; }
-.device-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; }
-.device-btn.active { background: var(--ui-accent); border-color: var(--ui-accent); }
-
-.preview-canvas { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; overflow: auto; }
-.preview-frame-wrapper { background: #fff; width: 100%; height: 100%; transition: 0.3s; }
-.preview-frame-wrapper.mode-pc { max-width: 1000px; }
-.preview-frame-wrapper.mode-mobile { width: 375px; max-height: 667px; border: 8px solid #333; border-radius: 24px; }
+.preview-canvas { flex: 1; display: flex; justify-content: center; align-items: center; padding: 16px; overflow: auto; }
+.preview-frame-wrapper { background: #fff; width: 100%; height: 100%; transition: 0.3s; overflow: hidden; }
+.preview-frame-wrapper.mode-pc { max-width: 1000px; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+.preview-frame-wrapper.mode-mobile { width: 375px; max-height: 667px; border: 10px solid #222; border-radius: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
 iframe { width: 100%; height: 100%; border: none; }
 
-.demo-save-container { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); display: none; z-index: 1000; }
+.demo-save-container { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: none; z-index: 1000; }
 .app-main.view-preview .demo-save-container { display: block; }
-.btn-save-demo { background: var(--ui-success); color: #fff; border: none; padding: 16px 32px; border-radius: 50px; font-weight: bold; box-shadow: 0 10px 25px rgba(0,0,0,0.4); cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.btn-save-demo {
+    background: var(--ui-success); color: #fff; border: none;
+    padding: 14px 28px; border-radius: 50px;
+    font-weight: bold; font-size: 0.95rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4); cursor: pointer;
+    display: flex; align-items: center; gap: 8px; transition: 0.2s;
+    white-space: nowrap;
+}
+.btn-save-demo:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,0.5); }
 
-.toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 24px; border-radius: 30px; font-size: 0.85rem; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 2000; }
+/* =========================================
+   Toast & Modal
+   ========================================= */
+.toast {
+    position: fixed; bottom: 80px; left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b; color: #fff; padding: 12px 24px;
+    border-radius: 30px; font-size: 0.85rem;
+    opacity: 0; pointer-events: none; transition: 0.3s; z-index: 3000;
+    white-space: nowrap;
+}
 .toast.active { opacity: 1; }
 
-.btn-primary { background: var(--ui-primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+.btn-primary { background: var(--ui-primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+.btn-primary:hover { opacity: 0.85; }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
 .modal-overlay.active { display: flex; }
-.modal-box { background: var(--ui-surface); width: 100%; max-width: 450px; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; }
-.modal-header { padding: 16px; border-bottom: 1px solid var(--ui-border); font-weight: bold; display: flex; justify-content: space-between; }
-.modal-body { padding: 20px; overflow-y: auto; }
-.section-title { font-size: 0.8rem; font-weight: bold; color: var(--ui-accent); margin: 15px 0 5px 0; }
+.modal-box { background: var(--ui-surface); width: 100%; max-width: 460px; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; max-height: 92vh; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+.modal-header { padding: 16px 20px; background: var(--ui-primary); color: #fff; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+.modal-header button { background: rgba(255,255,255,0.2); border: none; color: #fff; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 0.9rem; }
+.modal-body { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.section-title { font-size: 0.78rem; font-weight: bold; color: var(--ui-accent); margin: 10px 0 4px 0; }
+.modal-footer { padding: 14px 20px; border-top: 1px solid var(--ui-border); display: flex; justify-content: flex-end; }
+
+/* Theme toggle */
+.theme-row { display: flex; gap: 8px; }
+.theme-btn {
+    flex: 1; padding: 10px 8px; border: 2px solid var(--ui-border);
+    border-radius: 8px; background: var(--ui-bg); color: var(--ui-text);
+    font-weight: bold; font-size: 0.85rem; cursor: pointer; transition: 0.2s;
+}
+.theme-btn.active { border-color: var(--ui-accent); background: rgba(34,174,201,0.1); }
 </style>
 </head>
 <body>
@@ -174,57 +327,92 @@ iframe { width: 100%; height: 100%; border: none; }
         <button class="switch-btn" id="mode-preview">📱 完成</button>
     </div>
     <div class="app-actions">
-        <button class="btn-icon" id="open-settings" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">⚙️</button>
-        <button class="btn-primary hide-on-mobile" id="save-top">保存</button>
+        <button class="btn-icon-header" id="open-settings" title="詳細設定">⚙️</button>
+        <button class="btn-save-header hide-mobile" id="save-top">💾 保存</button>
     </div>
 </header>
 
 <main class="app-main view-editor" id="main-container">
+
+    <!-- Editor Panel -->
     <section class="editor-panel">
         <div class="step-container">
-            <div>
-                <div class="step-title"><span class="step-num">1</span> 基本設定</div>
-                <select id="industry-select" class="input-sm">
-                    <option value="manufacturing">製造業</option>
-                    <option value="wholesale">卸業</option>
-                    <option value="insurance">保険代理店</option>
-                    <option value="renovation">内装・リフォーム</option>
-                </select>
-                <div class="color-pills" id="color-pills"></div>
-            </div>
-            <div>
-                <div class="step-title"><span class="step-num">2</span> JPG写真をセット</div>
-                <div class="photo-deck">
-                    <div class="photo-card hero" data-target="hero">
-                        <img src="" class="photo-preview" id="prev-hero" style="display:none">
-                        <div class="photo-placeholder" id="ph-hero">🖼️ ビジュアル画面.jpg</div>
-                        <button class="btn-photo-clear" data-target="hero">✕</button>
+
+            <!-- STEP 1: 基本設定 -->
+            <div class="step-card">
+                <div class="step-head">
+                    <span class="step-num">1</span>
+                    <span class="step-label">🏢 基本設定</span>
+                </div>
+                <div class="step-body">
+                    <div>
+                        <div class="field-label">会社名・店舗名</div>
+                        <input type="text" id="inp-company" class="input-sm" placeholder="例：田中精工株式会社">
                     </div>
-                    <div class="photo-card" data-target="p1">
-                        <img src="" class="photo-preview" id="prev-p1" style="display:none">
-                        <div class="photo-placeholder" id="ph-p1">📸 画面①.jpg</div>
-                        <button class="btn-photo-clear" data-target="p1">✕</button>
+                    <div>
+                        <div class="field-label">業種テンプレート</div>
+                        <select id="industry-select" class="input-sm">
+                            <option value="manufacturing">🏭 製造業</option>
+                            <option value="wholesale">📦 卸売業</option>
+                            <option value="insurance">🛡️ 保険代理店</option>
+                            <option value="renovation">🏠 内装・リフォーム</option>
+                            <option value="tax">📋 税理士・会計事務所</option>
+                            <option value="beauty">💄 美容・サロン</option>
+                            <option value="restaurant">🍽️ 飲食・カフェ</option>
+                        </select>
                     </div>
-                    <div class="photo-card" data-target="p2">
-                        <img src="" class="photo-preview" id="prev-p2" style="display:none">
-                        <div class="photo-placeholder" id="ph-p2">📸 画面②.jpg</div>
-                        <button class="btn-photo-clear" data-target="p2">✕</button>
-                    </div>
-                    <div class="photo-card" data-target="p3">
-                        <img src="" class="photo-preview" id="prev-p3" style="display:none">
-                        <div class="photo-placeholder" id="ph-p3">📸 画面③.jpg</div>
-                        <button class="btn-photo-clear" data-target="p3">✕</button>
+                    <div>
+                        <div class="field-label">テーマカラー</div>
+                        <div class="color-pills" id="color-pills"></div>
                     </div>
                 </div>
             </div>
-            <button class="btn-primary" id="btn-finish-jump" style="padding:16px;">📱 完成デモ画面へ進む</button>
+
+            <!-- STEP 2: 写真 -->
+            <div class="step-card">
+                <div class="step-head">
+                    <span class="step-num">2</span>
+                    <span class="step-label">📷 写真をセット</span>
+                </div>
+                <div class="step-body">
+                    <div class="photo-deck">
+                        <div class="photo-card hero" data-target="hero">
+                            <img src="" class="photo-preview" id="prev-hero" style="display:none">
+                            <div class="photo-placeholder" id="ph-hero"><span>🖼️</span>メイン画像<br><small>（横長推奨）</small></div>
+                            <button class="btn-photo-clear" data-target="hero">✕</button>
+                        </div>
+                        <div class="photo-card" data-target="p1">
+                            <img src="" class="photo-preview" id="prev-p1" style="display:none">
+                            <div class="photo-placeholder" id="ph-p1"><span>📸</span>特徴①</div>
+                            <button class="btn-photo-clear" data-target="p1">✕</button>
+                        </div>
+                        <div class="photo-card" data-target="p2">
+                            <img src="" class="photo-preview" id="prev-p2" style="display:none">
+                            <div class="photo-placeholder" id="ph-p2"><span>📸</span>特徴②</div>
+                            <button class="btn-photo-clear" data-target="p2">✕</button>
+                        </div>
+                        <div class="photo-card" data-target="p3">
+                            <img src="" class="photo-preview" id="prev-p3" style="display:none">
+                            <div class="photo-placeholder" id="ph-p3"><span>📸</span>特徴③</div>
+                            <button class="btn-photo-clear" data-target="p3">✕</button>
+                        </div>
+                    </div>
+                    <p style="font-size:0.72rem; color:var(--ui-text-muted); margin:0;">✅ タップで写真を選択。横長JPGがきれいに仕上がります。</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <button class="btn-finish" id="btn-finish-jump">📱 完成デモを確認する →</button>
+            <button class="btn-save-mobile" id="save-mobile">💾 HTMLを保存する</button>
+
         </div>
     </section>
 
+    <!-- Preview Panel -->
     <section class="preview-panel">
         <div class="preview-toolbar">
-            <button class="device-btn active" data-mode="pc">PC表示</button>
-            <button class="device-btn" data-mode="mobile">スマホ表示</button>
+            <button class="device-btn active" data-mode="pc">🖥️ PC</button>
+            <button class="device-btn" data-mode="mobile">📱 スマホ</button>
         </div>
         <div class="preview-canvas">
             <div class="preview-frame-wrapper mode-pc" id="frame-wrapper">
@@ -235,31 +423,41 @@ iframe { width: 100%; height: 100%; border: none; }
             <button class="btn-save-demo" id="save-presentation">💾 このデモサイトを保存する</button>
         </div>
     </section>
+
 </main>
 
 <!-- Settings Modal -->
 <div class="modal-overlay" id="modal-settings">
     <div class="modal-box">
-        <div class="modal-header"><span>詳細設定</span><button id="close-modal" style="background:none; border:none; cursor:pointer;">✕</button></div>
+        <div class="modal-header">
+            <span>⚙️ 詳細設定</span>
+            <button id="close-modal">✕</button>
+        </div>
         <div class="modal-body">
             <div class="section-title">🏢 会社情報</div>
-            <input type="text" id="inp-company" class="input-sm" placeholder="会社名">
-            <input type="text" id="inp-address" class="input-sm" placeholder="住所">
+            <input type="text" id="inp-address" class="input-sm" placeholder="住所（例：大阪府東大阪市）">
+            <input type="text" id="inp-catchcustom" class="input-sm" placeholder="キャッチコピー（空白=自動）">
             <input type="text" id="inp-map" class="input-sm" placeholder="GoogleマップURL">
+
             <div class="section-title">✉️ 連絡先・SNS</div>
             <input type="email" id="inp-email" class="input-sm" placeholder="メールアドレス">
-            <input type="text" id="inp-line" class="input-sm" placeholder="LINE URL">
+            <input type="tel" id="inp-tel" class="input-sm" placeholder="電話番号">
+            <input type="text" id="inp-line" class="input-sm" placeholder="LINE公式アカウント URL">
             <input type="text" id="inp-insta" class="input-sm" placeholder="Instagram URL">
-            <div class="section-title">🎨 アプリ設定</div>
-            <div style="display:flex; gap:10px;">
-                <button class="btn-primary" id="set-light" style="flex:1; background:#eee; color:#333;">☀️ ライト</button>
-                <button class="btn-primary" id="set-dark" style="flex:1; background:#333;">🌙 ダーク</button>
+
+            <div class="section-title">🎨 アプリのテーマ</div>
+            <div class="theme-row">
+                <button class="theme-btn active" id="set-light">☀️ ライト</button>
+                <button class="theme-btn" id="set-dark">🌙 ダーク</button>
             </div>
-            <div class="section-title">🛠️ メンテナンス</div>
-            <button class="btn-primary" id="load-demo" style="width:100%; background:var(--ui-accent);">🏭 製造業デモデータを反映</button>
-            <button class="btn-primary" id="clear-all" style="width:100%; background:var(--ui-danger); margin-top:10px;">🗑️ データクリア</button>
+
+            <div class="section-title">🛠️ デモ・リセット</div>
+            <button class="btn-primary" id="load-demo" style="width:100%; background:var(--ui-accent); margin-bottom:8px;">🏭 製造業デモデータを反映</button>
+            <button class="btn-primary" id="clear-all" style="width:100%; background:var(--ui-danger);">🗑️ データをクリア</button>
         </div>
-        <div style="padding:15px; text-align:right;"><button class="btn-primary" id="close-modal-btn">OK</button></div>
+        <div class="modal-footer">
+            <button class="btn-primary" id="close-modal-btn">OK ✔</button>
+        </div>
     </div>
 </div>
 
@@ -270,67 +468,166 @@ iframe { width: 100%; height: 100%; border: none; }
 document.addEventListener('DOMContentLoaded', () => {
     const getEl = (id) => document.getElementById(id);
 
-    // --- Data Templates ---
+    // --- Industry Templates ---
     const industryData = {
-        manufacturing: { catch: "日本のものづくりを、\n世界へ届ける技術力。", points: ["精密加工技術", "短納期対応", "試作から量産まで"] },
-        wholesale: { catch: "物流の最適化で、\nビジネスを加速させる。", points: ["圧倒的な在庫力", "即日配送体制", "小ロット対応"] },
-        insurance: { catch: "未来の安心を、\nあなたと一緒に設計します。", points: ["オーダーメイド提案", "迅速な給付サポート", "万全の相談体制"] },
-        renovation: { catch: "理想の住まいを、\n確かな技術で形にします。", points: ["完全自社施工", "地域密着サポート", "プロの提案力"] }
+        manufacturing: {
+            catch: "日本のものづくりを、\n世界へ届ける技術力。",
+            points: ["精密加工技術", "短納期対応", "試作から量産まで"],
+            color: "#020562"
+        },
+        wholesale: {
+            catch: "物流の最適化で、\nビジネスを加速させる。",
+            points: ["圧倒的な在庫力", "即日配送体制", "小ロット対応"],
+            color: "#22AEC9"
+        },
+        insurance: {
+            catch: "未来の安心を、\nあなたと一緒に設計します。",
+            points: ["オーダーメイド提案", "迅速な給付サポート", "万全の相談体制"],
+            color: "#3B82F6"
+        },
+        renovation: {
+            catch: "理想の住まいを、\n確かな技術で形にします。",
+            points: ["完全自社施工", "地域密着サポート", "プロの提案力"],
+            color: "#F59E0B"
+        },
+        tax: {
+            catch: "数字の向こうに、\n経営の未来が見えてくる。",
+            points: ["月次決算サポート", "節税・資金調達対応", "オンライン面談OK"],
+            color: "#0F766E"
+        },
+        beauty: {
+            catch: "あなたらしい美しさを、\nプロの技術で引き出します。",
+            points: ["完全個室プライベート空間", "厳選オーガニック使用", "カウンセリング重視"],
+            color: "#DB2777"
+        },
+        restaurant: {
+            catch: "地元の食材と、\nシェフのこだわりが出会う場所。",
+            points: ["国産食材にこだわる", "季節のおまかせコース", "個室・貸切対応"],
+            color: "#D97706"
+        }
     };
+
+    // --- Color Palette ---
+    const colorPalette = [
+        { hex: '#020562', name: '紺' },
+        { hex: '#22AEC9', name: '水色' },
+        { hex: '#10B981', name: '緑' },
+        { hex: '#F59E0B', name: '橙' },
+        { hex: '#EC4899', name: '桃' },
+        { hex: '#7C3AED', name: '紫' },
+        { hex: '#EF4444', name: '赤' },
+        { hex: '#374151', name: '黒' },
+    ];
 
     const state = {
         view: 'editor',
         theme: 'light',
         accent: '#020562',
         industry: 'manufacturing',
-        company: '（会社名を入力）',
-        address: '', mapUrl: '', email: '', lineUrl: '', instaUrl: '',
+        company: '',
+        catchCustom: '',
+        address: '', mapUrl: '', email: '', tel: '', lineUrl: '', instaUrl: '',
         images: { hero: null, p1: null, p2: null, p3: null }
     };
 
-    // --- Render Website HTML ---
+    // --- Build HTML ---
     function buildHTML() {
         const c = state.accent;
-        const catchphrase = (industryData[state.industry]?.catch || "Welcome").replace(/\n/g, '<br>');
-        const heroBg = state.images.hero ? `background-image:url(${state.images.hero});` : `background:linear-gradient(135deg, ${c}, #0f172a);`;
+        const ind = industryData[state.industry] || industryData.manufacturing;
+        const catchRaw = state.catchCustom || ind.catch;
+        const catchphrase = catchRaw.replace(/\n/g, '<br>');
+        const companyName = state.company || '会社名を入力してください';
+        const heroBg = state.images.hero
+            ? `background-image:url(${state.images.hero}); background-size:cover; background-position:center;`
+            : `background:linear-gradient(135deg, ${c} 0%, #0f172a 100%);`;
 
         const cards = [1,2,3].map(i => {
             const img = state.images[`p${i}`];
-            const title = industryData[state.industry]?.points[i-1] || `特徴 ${i}`;
-            const imgDiv = img ? `<div style="height:200px; background:url(${img}) center/cover;"></div>` : `<div style="height:200px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#94a3b8;">NO IMAGE</div>`;
-            return `<div style="background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.05);">${imgDiv}<div style="padding:20px;"><h3 style="color:${c}; margin:0 0 10px 0;">${title}</h3><p style="font-size:0.9rem; opacity:0.8; margin:0;">最高品質のサービスをお届けします。</p></div></div>`;
+            const title = ind.points[i-1] || `特徴 ${i}`;
+            const imgDiv = img
+                ? `<div style="height:200px; background:url(${img}) center/cover;"></div>`
+                : `<div style="height:200px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:0.85rem;">写真をセットすると表示されます</div>`;
+            return `<div style="background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.08);">${imgDiv}<div style="padding:20px;"><h3 style="color:${c}; margin:0 0 10px 0; font-size:1.1rem;">${title}</h3><p style="font-size:0.88rem; color:#64748b; margin:0; line-height:1.7;">最高品質のサービスをお届けします。ご相談はお気軽にどうぞ。</p></div></div>`;
         }).join('');
 
-        return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${state.company}</title><style>
-            body{margin:0; font-family:sans-serif; background:#f8fafc; color:#333; line-height:1.6;}
-            header{background:#fff; padding:15px 5%; display:flex; justify-content:space-between; align-items:center; box-shadow:0 1px 5px rgba(0,0,0,0.1); position:sticky; top:0; z-index:100;}
-            .hero{height:60vh; min-height:400px; display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; background-size:cover; background-position:center; ${heroBg}}
-            .hero h1{font-size:2.4rem; text-shadow:0 4px 20px rgba(0,0,0,0.5); padding:20px; margin:0;}
-            section{padding:60px 5%; max-width:1200px; margin:0 auto;}
-            .grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:30px;}
-            footer{background:#0f172a; color:#fff; text-align:center; padding:50px 20px; font-size:0.8rem;}
-        </style></head><body>
-            <header><div style="font-weight:bold; color:${c};">${state.company}</div></header>
-            <div class="hero"><h1>${catchphrase}</h1></div>
-            <section><div class="grid">${cards}</div></section>
-            <footer><div>${state.company}</div><div>${state.address}</div></footer>
-        </body></html>`;
+        // Contact section
+        let contactHtml = '';
+        const hasContact = state.email || state.tel || state.lineUrl || state.instaUrl || state.mapUrl;
+        if (hasContact) {
+            const items = [];
+            if (state.tel) items.push(`<a href="tel:${state.tel}" style="display:flex;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid #e2e8f0;color:#333;text-decoration:none;font-size:0.95rem;">📞 <span>${state.tel}</span></a>`);
+            if (state.email) items.push(`<a href="mailto:${state.email}" style="display:flex;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid #e2e8f0;color:#333;text-decoration:none;font-size:0.95rem;">✉️ <span>${state.email}</span></a>`);
+            if (state.lineUrl) items.push(`<a href="${state.lineUrl}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid #e2e8f0;color:#333;text-decoration:none;font-size:0.95rem;">💬 <span>LINE公式アカウント</span></a>`);
+            if (state.instaUrl) items.push(`<a href="${state.instaUrl}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid #e2e8f0;color:#333;text-decoration:none;font-size:0.95rem;">📷 <span>Instagram</span></a>`);
+            if (state.mapUrl) items.push(`<a href="${state.mapUrl}" target="_blank" style="display:flex;align-items:center;gap:10px;padding:14px 0;color:#333;text-decoration:none;font-size:0.95rem;">🗺️ <span>Googleマップで見る</span></a>`);
+            contactHtml = `<section style="padding:60px 5%; background:#f8fafc;"><div style="max-width:600px; margin:0 auto;"><h2 style="color:${c}; font-size:1.5rem; border-left:4px solid ${c}; padding-left:12px; margin-bottom:24px;">お問い合わせ・アクセス</h2>${items.join('')}</div></section>`;
+        }
+
+        return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${companyName}</title><style>
+*{box-sizing:border-box;}
+body{margin:0; font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans",sans-serif; background:#f8fafc; color:#333; line-height:1.6;}
+header{background:#fff; padding:14px 5%; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.08); position:sticky; top:0; z-index:100;}
+.hero{height:60vh; min-height:400px; display:flex; align-items:center; justify-content:center; text-align:center; color:#fff; ${heroBg} position:relative;}
+.hero::after{content:''; position:absolute; inset:0; background:rgba(0,0,0,0.35);}
+.hero-inner{position:relative; z-index:1; padding:20px;}
+.hero h1{font-size:2.4rem; text-shadow:0 4px 20px rgba(0,0,0,0.4); margin:0 0 16px 0; line-height:1.4;}
+.hero-sub{font-size:1rem; opacity:0.9; margin:0;}
+section{padding:60px 5%; max-width:1200px; margin:0 auto;}
+.section-title{font-size:1.5rem; color:${c}; border-left:4px solid ${c}; padding-left:12px; margin-bottom:32px;}
+.grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px;}
+footer{background:#0f172a; color:#94a3b8; text-align:center; padding:40px 20px; font-size:0.82rem;}
+footer .company{font-size:1rem; color:#fff; font-weight:bold; margin-bottom:8px;}
+@media(max-width:600px){.hero h1{font-size:1.6rem;}}
+</style></head><body>
+<header>
+    <div style="font-weight:800; color:${c}; font-size:1rem;">${companyName}</div>
+    ${state.tel ? `<a href="tel:${state.tel}" style="background:${c}; color:#fff; padding:8px 16px; border-radius:20px; text-decoration:none; font-weight:bold; font-size:0.82rem;">📞 お電話</a>` : ''}
+</header>
+<div class="hero">
+    <div class="hero-inner">
+        <h1>${catchphrase}</h1>
+        <p class="hero-sub">${companyName}</p>
+    </div>
+</div>
+<section>
+    <div class="section-title">私たちの強み</div>
+    <div class="grid">${cards}</div>
+</section>
+${contactHtml}
+<footer>
+    <div class="company">${companyName}</div>
+    ${state.address ? `<div>${state.address}</div>` : ''}
+    <div style="margin-top:16px; font-size:0.75rem; opacity:0.5;">© ${new Date().getFullYear()} ${companyName}</div>
+</footer>
+</body></html>`;
     }
 
+    // --- UI Sync ---
     function syncUI() {
         document.body.setAttribute('data-theme', state.theme);
         getEl('main-container').className = `app-main view-${state.view}`;
         getEl('mode-editor').classList.toggle('active', state.view === 'editor');
         getEl('mode-preview').classList.toggle('active', state.view === 'preview');
-        
+
+        // Theme buttons in modal
+        getEl('set-light').classList.toggle('active', state.theme === 'light');
+        getEl('set-dark').classList.toggle('active', state.theme === 'dark');
+
         getEl('inp-company').value = state.company;
         getEl('inp-address').value = state.address;
+        getEl('inp-catchcustom').value = state.catchCustom;
         getEl('industry-select').value = state.industry;
 
-        ['hero', 'p1', 'p2', 'p3'].forEach(k => {
+        // Color pills
+        document.querySelectorAll('.color-pill').forEach(p => {
+            p.classList.toggle('active', p.dataset.color === state.accent);
+        });
+
+        // Photos
+        ['hero','p1','p2','p3'].forEach(k => {
             const img = getEl(`prev-${k}`);
             const ph = getEl(`ph-${k}`);
-            if(state.images[k]) {
+            if (state.images[k]) {
                 img.src = state.images[k]; img.style.display = 'block'; ph.style.display = 'none';
                 img.parentElement.classList.add('has-image');
             } else {
@@ -338,61 +635,117 @@ document.addEventListener('DOMContentLoaded', () => {
                 img.parentElement.classList.remove('has-image');
             }
         });
+
         getEl('preview-iframe').srcdoc = buildHTML();
     }
 
-    // --- Actions ---
-    const showToast = (m) => { const t = getEl('toast'); t.innerText = m; t.classList.add('active'); setTimeout(()=>t.classList.remove('active'),3000); };
-    const download = () => {
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([buildHTML()], {type:'text/html'}));
-        a.download = `${state.company}.html`; a.click(); showToast('保存しました！');
+    // --- Toast & Download ---
+    const showToast = (m) => {
+        const t = getEl('toast'); t.innerText = m;
+        t.classList.add('active'); setTimeout(() => t.classList.remove('active'), 3000);
     };
 
-    // --- Events ---
+    const download = () => {
+        const name = state.company || 'homepage';
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([buildHTML()], { type: 'text/html' }));
+        a.download = `${name}.html`; a.click();
+        showToast('✅ 保存しました！');
+    };
+
+    // --- Events: View Switch ---
     getEl('mode-editor').onclick = () => { state.view = 'editor'; syncUI(); };
     getEl('mode-preview').onclick = () => { state.view = 'preview'; syncUI(); };
     getEl('btn-finish-jump').onclick = () => { state.view = 'preview'; syncUI(); };
+
+    // --- Events: Save ---
     getEl('save-top').onclick = download;
+    getEl('save-mobile').onclick = download;
     getEl('save-presentation').onclick = download;
 
+    // --- Events: Modal ---
     getEl('open-settings').onclick = () => getEl('modal-settings').classList.add('active');
     getEl('close-modal').onclick = () => getEl('modal-settings').classList.remove('active');
     getEl('close-modal-btn').onclick = () => getEl('modal-settings').classList.remove('active');
+    getEl('modal-settings').onclick = (e) => { if (e.target === getEl('modal-settings')) getEl('modal-settings').classList.remove('active'); };
 
-    getEl('industry-select').onchange = (e) => { state.industry = e.target.value; syncUI(); };
+    // --- Events: Inputs ---
+    getEl('industry-select').onchange = (e) => {
+        state.industry = e.target.value;
+        // Auto-apply industry color
+        const ind = industryData[e.target.value];
+        if (ind && ind.color) {
+            state.accent = ind.color;
+            document.querySelectorAll('.color-pill').forEach(p => {
+                p.classList.toggle('active', p.dataset.color === state.accent);
+            });
+        }
+        syncUI();
+    };
     getEl('inp-company').oninput = (e) => { state.company = e.target.value; syncUI(); };
     getEl('inp-address').oninput = (e) => { state.address = e.target.value; syncUI(); };
+    getEl('inp-catchcustom').oninput = (e) => { state.catchCustom = e.target.value; syncUI(); };
     getEl('inp-map').oninput = (e) => { state.mapUrl = e.target.value; syncUI(); };
     getEl('inp-email').oninput = (e) => { state.email = e.target.value; syncUI(); };
+    getEl('inp-tel').oninput = (e) => { state.tel = e.target.value; syncUI(); };
     getEl('inp-line').oninput = (e) => { state.lineUrl = e.target.value; syncUI(); };
     getEl('inp-insta').oninput = (e) => { state.instaUrl = e.target.value; syncUI(); };
 
+    // --- Events: Theme ---
     getEl('set-light').onclick = () => { state.theme = 'light'; syncUI(); };
     getEl('set-dark').onclick = () => { state.theme = 'dark'; syncUI(); };
 
+    // --- Events: Demo & Clear ---
     getEl('load-demo').onclick = () => {
-        state.company = "前田精工株式会社"; state.address = "大阪府東大阪市"; state.industry = "manufacturing";
-        syncUI(); getEl('modal-settings').classList.remove('active'); showToast('デモを読み込みました');
+        state.company = "前田精工株式会社"; state.address = "大阪府東大阪市"; state.industry = "manufacturing"; state.accent = '#020562';
+        state.tel = "06-1234-5678"; state.email = "info@maeda-seiko.co.jp";
+        syncUI(); getEl('modal-settings').classList.remove('active'); showToast('🏭 デモを読み込みました');
     };
-    getEl('clear-all').onclick = () => { if(confirm('消去しますか？')){ localStorage.clear(); location.reload(); } };
+    getEl('clear-all').onclick = () => {
+        if (confirm('すべてのデータをリセットしますか？')) { localStorage.clear(); location.reload(); }
+    };
 
-    const colors = ['#020562', '#22AEC9', '#10B981', '#F59E0B', '#EC4899'];
-    colors.forEach(c => {
-        const p = document.createElement('div'); p.className = 'color-pill'; p.style.setProperty('--bg', c);
-        p.onclick = () => { state.accent = c; syncUI(); }; getEl('color-pills').appendChild(p);
+    // --- Color Pills ---
+    const pillContainer = getEl('color-pills');
+    colorPalette.forEach(({ hex, name }) => {
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'flex'; wrapper.style.flexDirection = 'column'; wrapper.style.alignItems = 'center';
+        const p = document.createElement('div');
+        p.className = 'color-pill'; p.style.backgroundColor = hex; p.dataset.color = hex;
+        if (hex === state.accent) p.classList.add('active');
+        p.onclick = () => { state.accent = hex; syncUI(); showToast(`カラーを変更しました`); };
+        const label = document.createElement('div');
+        label.className = 'color-pill-label'; label.textContent = name;
+        wrapper.appendChild(p); wrapper.appendChild(label);
+        pillContainer.appendChild(wrapper);
     });
 
+    // --- Device Switch (PC/Mobile) ---
+    document.querySelectorAll('.device-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.device-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const fw = getEl('frame-wrapper');
+            fw.className = `preview-frame-wrapper mode-${btn.dataset.mode}`;
+        };
+    });
+
+    // --- Photo Upload ---
     let target = null;
     document.querySelectorAll('.photo-card').forEach(c => {
-        c.onclick = (e) => { if(e.target.className === 'btn-photo-clear') return; target = c.dataset.target; getEl('file-input').click(); };
+        c.onclick = (e) => {
+            if (e.target.classList.contains('btn-photo-clear')) return;
+            target = c.dataset.target; getEl('file-input').click();
+        };
     });
     getEl('file-input').onchange = (e) => {
-        const f = e.target.files[0]; if(!f) return;
-        const r = new FileReader(); r.onload = (ev) => { state.images[target] = ev.target.result; syncUI(); showToast('反映しました'); }; r.readAsDataURL(f);
+        const f = e.target.files[0]; if (!f) return;
+        const r = new FileReader();
+        r.onload = (ev) => { state.images[target] = ev.target.result; syncUI(); showToast('✅ 写真を反映しました'); };
+        r.readAsDataURL(f); e.target.value = '';
     };
     document.querySelectorAll('.btn-photo-clear').forEach(b => {
-        b.onclick = (e) => { e.stopPropagation(); state.images[b.dataset.target] = null; syncUI(); };
+        b.onclick = (e) => { e.stopPropagation(); state.images[b.dataset.target] = null; syncUI(); showToast('写真を削除しました'); };
     });
 
     syncUI();
